@@ -5,15 +5,18 @@ import { sampleEn } from '@/markdown/samples/sample.en'
 import { sampleZh } from '@/markdown/samples/sample.zh'
 import { useResumeStore } from '@/stores/useResumeStore'
 import FileMenu from './FileMenu.vue'
+import HelpDrawer from './HelpDrawer.vue'
+import ResumeManager from './ResumeManager.vue'
 import StylePanel from './StylePanel.vue'
 import TemplatePicker from './TemplatePicker.vue'
 
 const store = useResumeStore()
 
-const openPanel = ref<'template' | 'style' | 'file' | null>(null)
-const controls = ref<HTMLElement | null>(null)
+const openPanel = ref<'resumes' | 'template' | 'style' | 'file' | null>(null)
+const toolbarRef = ref<HTMLElement | null>(null)
+const helpOpen = ref(false)
 
-function toggle(panel: 'template' | 'style' | 'file') {
+function toggle(panel: 'resumes' | 'template' | 'style' | 'file') {
   openPanel.value = openPanel.value === panel ? null : panel
 }
 
@@ -29,8 +32,9 @@ function exportPdf() {
   window.print()
 }
 
+// 点击工具栏以外区域时收起下拉面板
 function onDocMouseDown(e: MouseEvent) {
-  if (openPanel.value && controls.value && !controls.value.contains(e.target as Node)) {
+  if (openPanel.value && toolbarRef.value && !toolbarRef.value.contains(e.target as Node)) {
     openPanel.value = null
   }
 }
@@ -41,14 +45,31 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', onDocMouseDown))
 
 <template>
   <header
-    class="app-toolbar flex h-12 shrink-0 items-center justify-between border-b border-slate-800 bg-slate-900 px-4"
+    ref="toolbarRef"
+    class="app-toolbar flex h-12 shrink-0 items-center justify-between gap-2 border-b border-slate-800 bg-slate-900 px-4"
   >
-    <div class="flex items-center gap-2">
-      <img src="/favicon.svg" alt="" class="h-5 w-5" />
-      <h1 class="text-sm font-semibold tracking-wide">MD Resume</h1>
+    <!-- 左侧：标识 + 当前简历切换器 -->
+    <div class="relative flex min-w-0 items-center gap-2">
+      <img src="/favicon.svg" alt="" class="h-5 w-5 shrink-0" />
+      <h1 class="hidden shrink-0 text-sm font-semibold tracking-wide lg:block">MD Resume</h1>
+      <span class="mx-0.5 h-4 w-px shrink-0 bg-slate-700" />
+      <button
+        class="flex min-w-0 items-center gap-1 rounded bg-slate-800 px-2.5 py-1 text-xs text-slate-200 hover:bg-slate-700"
+        :class="openPanel === 'resumes' ? 'bg-sky-600 hover:bg-sky-500' : ''"
+        :title="$t('manager.title')"
+        @click="toggle('resumes')"
+      >
+        <span class="max-w-36 truncate">{{ store.activeDoc?.name }}</span>
+        <span class="text-slate-500">▾</span>
+      </button>
+
+      <div v-if="openPanel === 'resumes'" class="absolute left-0 top-full z-20 mt-2">
+        <ResumeManager @close="openPanel = null" />
+      </div>
     </div>
 
-    <div ref="controls" class="relative flex items-center gap-2">
+    <!-- 右侧：功能按钮 -->
+    <div class="relative flex shrink-0 items-center gap-2">
       <button
         class="rounded bg-slate-800 px-2.5 py-1 text-xs text-slate-300 hover:bg-slate-700"
         @click="loadSample"
@@ -89,12 +110,21 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', onDocMouseDown))
       >
         {{ store.locale === 'zh-CN' ? 'EN' : '中文' }}
       </button>
+      <button
+        class="rounded bg-slate-800 px-2 py-1 text-xs text-slate-300 hover:bg-slate-700"
+        :title="$t('help.open')"
+        @click="helpOpen = true"
+      >
+        ?
+      </button>
 
-      <div v-if="openPanel" class="absolute right-0 top-full z-20 mt-2">
+      <div v-if="openPanel && openPanel !== 'resumes'" class="absolute right-0 top-full z-20 mt-2">
         <TemplatePicker v-if="openPanel === 'template'" @close="openPanel = null" />
         <StylePanel v-else-if="openPanel === 'style'" />
         <FileMenu v-else />
       </div>
     </div>
+
+    <HelpDrawer v-if="helpOpen" @close="helpOpen = false" />
   </header>
 </template>

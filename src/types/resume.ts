@@ -41,6 +41,18 @@ export interface ResumeData {
   sections: Section[]
 }
 
+/** 一份简历 = 内容 + 外观（多简历管理，§3.4） */
+export interface ResumeDoc {
+  id: string
+  name: string
+  createdAt: number
+  updatedAt: number
+  markdown: string
+  templateId: string
+  optionsByTemplate: Record<string, StyleOptions>
+  customCss: string
+}
+
 /** L2 样式面板可调项（§3.6）；映射为 .resume-page 上的 CSS Variables */
 export type Density = 'compact' | 'standard' | 'relaxed'
 

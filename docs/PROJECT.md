@@ -1,6 +1,6 @@
 # Markdown 转简历 Web 应用 — 项目设计文档
 
-> 版本 v0.9 · 2026-09-15 · 状态：M0–M4 已完成（待部署）
+> 版本 v1.0 · 2026-09-15 · 状态：M0–M4 完成 + 多简历管理与内置帮助
 
 **变更记录**
 
@@ -15,6 +15,7 @@
 | v0.7 | 模板扩至 12 款（新增 serif/twocolumn/cards/raildark/swiss/ledger 六种形态）；打印加 `print-color-adjust: exact` 保证深色背景原样打印 |
 | v0.8 | M3 落地：CodeMirror 编辑器（懒加载）、vue-i18n 中英切换 + 英文示例、.md 导入导出、A4 分页线与长度提示（页数徽标 / 目标页数 / 一键压缩 / 撤销）；空状态提示从模板上移至预览层，模板零内置文案 |
 | v0.9 | M4 落地：L3 自定义 CSS（`.resume-page` 作用域自动处理，预览/打印一致生效）、样式方案含 CSS 并支持 JSON 导入导出、JSON Resume 双向导入导出；文件操作收拢至「文件」菜单 |
+| v1.0 | 多份简历管理（新建/复制/重命名/删除/切换，外观与自定义 CSS 随简历保存，存储迁移 v1→v2，至少保留一份）；应用内「写作约定」帮助抽屉（规则清单 + 可载入/复制的完整示例） |
 
 ---
 
@@ -250,6 +251,8 @@ useResumeStore (Pinia)
 ├── locale: 'zh-CN' | 'en'
 └── actions: setMarkdown / setTemplate / setOption / setTargetPages / savePreset / applyPreset / resetStyle ...
 ```
+
+> v1.0 起文档级状态（markdown / templateId / optionsByTemplate / customCss）归入 `resumes: ResumeDoc[]`，每份简历独立保存内容与外观；store 对外保留同名代理 API，并新增 createResume / duplicateResume / renameResume / deleteResume / switchResume。存储版本 v1 → v2 自动迁移。
 
 ```ts
 interface StyleOptions {
