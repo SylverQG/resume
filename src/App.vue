@@ -38,7 +38,7 @@ watch(
 </script>
 
 <template>
-  <div class="flex h-full flex-col bg-slate-950 text-slate-200">
+  <div class="flex h-full flex-col overflow-hidden bg-slate-950 text-slate-200">
     <Toolbar />
     <main class="flex min-h-0 flex-1">
       <EditorPanel class="w-2/5 min-w-72 border-r border-slate-800" />

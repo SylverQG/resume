@@ -14,4 +14,9 @@ body,
 
 body {
   margin: 0;
+  /* 整页永不滚动：滚动只发生在编辑器 / 预览内部，顶栏保持常驻 */
+  overflow: hidden;
+  overscroll-behavior: none;
+  /* 兜底：极端情况下露出的页面背景与主题同色，不出现白色空带 */
+  background-color: #020617;
 }
