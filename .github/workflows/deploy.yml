@@ -34,10 +34,9 @@ jobs:
         # Pages 以 https://<用户名>.github.io/<仓库名>/ 子路径发布，base 自动取仓库名
         run: npm run build -- --base=/${{ github.event.repository.name }}/
 
+      # 前提（仅首次需要手动）：仓库 Settings → Pages → Source 选「GitHub Actions」
+      # GITHUB_TOKEN 无权创建 Pages 站点，无法由工作流代劳
       - uses: actions/configure-pages@v5
-        with:
-          # 仓库尚未开启 Pages 时自动开启（Source: GitHub Actions），免去手动设置
-          enablement: true
 
       - uses: actions/upload-pages-artifact@v3
         with:
