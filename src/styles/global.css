@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+/* A4 画布基准尺寸（@96dpi），M1 起由 PreviewPanel 与模板共同消费 */
+:root {
+  --page-width: 794px;
+  --page-height: 1123px;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+}

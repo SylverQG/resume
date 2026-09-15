@@ -1,0 +1,59 @@
+@page {
+  size: A4;
+  margin: 0;
+}
+
+/* 打印导出：仅输出简历画布（设计文档 §3.5）。
+   页面留白由模板自身 padding（mm）承担，.resume-page 只做画布外壳 */
+@media print {
+  html,
+  body,
+  #app {
+    height: auto !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+
+  .app-toolbar,
+  .editor-panel {
+    display: none !important;
+  }
+
+  .preview-panel {
+    padding: 0 !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+
+  .preview-panel > div {
+    width: auto !important;
+  }
+
+  /* 分页提示线仅用于预览 */
+  .page-break {
+    display: none !important;
+  }
+
+  .resume-page {
+    min-height: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+
+  /* 深色头部/侧栏、头像块等背景色必须原样打印（Chrome 默认不打印背景） */
+  .resume-page {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* 跨页规则：条目与要点不切断，区块标题/条目标题不孤行 */
+  .resume-page .r-item,
+  .resume-page .r-bullets li {
+    break-inside: avoid;
+  }
+
+  .resume-page .r-section-title,
+  .resume-page .r-item-head {
+    break-after: avoid;
+  }
+}
