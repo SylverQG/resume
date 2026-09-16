@@ -192,6 +192,5 @@ const contacts = computed(() => contactItems(props.data.basics))
 
 .cp-header:has(.cp-photo) {
   min-height: calc(60px * var(--photo-scale, 1));
-  padding-right: calc(56px * var(--photo-scale, 1));
 }
 </style>
