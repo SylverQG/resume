@@ -230,6 +230,6 @@ const contacts = computed(() => contactItems(props.data.basics))
 }
 
 .r-header:has(.r-photo) {
-  min-height: calc(88px * var(--photo-scale, 1));
+  min-height: 88px;
 }
 </style>

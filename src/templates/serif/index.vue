@@ -216,6 +216,6 @@ const contacts = computed(() => contactItems(props.data.basics))
 }
 
 .sf-header:has(.sf-photo) {
-  min-height: calc(88px * var(--photo-scale, 1));
+  min-height: 88px;
 }
 </style>
