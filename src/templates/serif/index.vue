@@ -6,7 +6,7 @@ import type { ResumeData, StyleOptions } from '@/types/resume'
 
 import { contactItems } from '../shared/useContacts'
 
-const props = defineProps<{ data: ResumeData; options: StyleOptions }>()
+const props = defineProps<{ data: ResumeData; options: StyleOptions; photo?: string }>()
 
 const contacts = computed(() => contactItems(props.data.basics))
 </script>
@@ -14,13 +14,13 @@ const contacts = computed(() => contactItems(props.data.basics))
 <template>
   <div class="r-serif" :class="options.headerLayout === 'left' ? 'is-left' : 'is-centered'">
     <header class="sf-header">
+            <img v-if="photo" class="sf-photo" :src="photo" alt="" />
       <h1 v-if="data.basics.name" class="sf-name">{{ data.basics.name }}</h1>
       <p v-if="data.basics.label" class="sf-label">{{ data.basics.label }}</p>
       <p v-if="contacts.length" class="sf-contact">
         <template v-for="(c, i) in contacts" :key="c.text">
           <span v-if="i > 0" class="sf-sep">·</span>
-          <a v-if="c.url" :href="c.url" target="_blank" rel="noopener noreferrer">{{ c.text }}</a>
-          <span v-else>{{ c.text }}</span>
+          <span>{{ c.text }}</span>
         </template>
       </p>
     </header>
@@ -200,5 +200,17 @@ const contacts = computed(() => contactItems(props.data.basics))
   background: #f5f5f4;
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
   font-size: 0.9em;
+}
+.sf-photo {
+  display: block;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 0 auto 10px;
+}
+
+.is-left .sf-photo {
+  margin: 0 0 10px;
 }
 </style>

@@ -7,7 +7,7 @@ import type { ResumeData, StyleOptions } from '@/types/resume'
 import Icon from '../shared/Icon.vue'
 import { contactItems } from '../shared/useContacts'
 
-const props = defineProps<{ data: ResumeData; options: StyleOptions }>()
+const props = defineProps<{ data: ResumeData; options: StyleOptions; photo?: string }>()
 
 const contacts = computed(() => contactItems(props.data.basics))
 
@@ -46,12 +46,12 @@ const mainSections = computed(() => props.data.sections.filter((s) => s.kind !==
           </main>
 
     <aside v-if="contacts.length || asideSections.length" class="rd-aside">
+      <img v-if="photo" class="rd-photo" :src="photo" alt="" />
       <div v-if="contacts.length" class="rd-aside-block">
         <template v-for="c in contacts" :key="c.text">
           <p class="rd-aside-contact">
-            <Icon :name="c.icon" />
-            <a v-if="c.url" :href="c.url" target="_blank" rel="noopener noreferrer">{{ c.text }}</a>
-            <span v-else>{{ c.text }}</span>
+            <Icon :name="c.icon ?? 'link'" />
+            <span>{{ c.text }}</span>
           </p>
         </template>
       </div>
@@ -249,5 +249,13 @@ const mainSections = computed(() => props.data.sections.filter((s) => s.kind !==
   background: #eef2f7;
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
   font-size: 0.92em;
+}
+.rd-photo {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.45);
 }
 </style>

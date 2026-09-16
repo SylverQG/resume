@@ -6,7 +6,7 @@ import type { ResumeData, StyleOptions } from '@/types/resume'
 
 import { contactItems } from '../shared/useContacts'
 
-const props = defineProps<{ data: ResumeData; options: StyleOptions }>()
+const props = defineProps<{ data: ResumeData; options: StyleOptions; photo?: string }>()
 
 const contacts = computed(() => contactItems(props.data.basics))
 </script>
@@ -14,13 +14,13 @@ const contacts = computed(() => contactItems(props.data.basics))
 <template>
   <div class="r-compact" :class="options.headerLayout === 'left' ? 'is-left' : 'is-centered'">
     <header class="cp-header">
+            <img v-if="photo" class="cp-photo" :src="photo" alt="" />
       <span v-if="data.basics.name" class="cp-name">{{ data.basics.name }}</span>
       <span v-if="data.basics.label" class="cp-label">{{ data.basics.label }}</span>
       <p v-if="contacts.length" class="cp-contact">
         <template v-for="(c, i) in contacts" :key="c.text">
           <span v-if="i > 0" class="cp-sep">|</span>
-          <a v-if="c.url" :href="c.url" target="_blank" rel="noopener noreferrer">{{ c.text }}</a>
-          <span v-else>{{ c.text }}</span>
+          <span>{{ c.text }}</span>
         </template>
       </p>
       <p v-if="data.basics.summary" class="cp-summary">{{ data.basics.summary }}</p>
@@ -175,5 +175,17 @@ const contacts = computed(() => contactItems(props.data.basics))
   background: #f1f5f9;
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
   font-size: 0.92em;
+}
+.cp-photo {
+  display: block;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 0 auto 6px;
+}
+
+.is-left .cp-photo {
+  margin: 0 0 6px;
 }
 </style>

@@ -98,7 +98,12 @@ async function compressToFit() {
           class="resume-page rounded-sm bg-white shadow-xl"
           :style="{ ...vars, 'min-height': 'var(--page-height)' }"
         >
-          <component :is="template.component" :data="resumeData" :options="store.styleOptions" />
+          <component
+            :is="template.component"
+            :data="resumeData"
+            :options="store.styleOptions"
+            :photo="store.activeDoc?.photo"
+          />
         </div>
 
         <!-- 分页虚线（仅预览，打印时隐藏） -->

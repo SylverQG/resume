@@ -7,7 +7,7 @@ import type { ResumeData, StyleOptions } from '@/types/resume'
 import Icon from '../shared/Icon.vue'
 import { contactItems } from '../shared/useContacts'
 
-const props = defineProps<{ data: ResumeData; options: StyleOptions }>()
+const props = defineProps<{ data: ResumeData; options: StyleOptions; photo?: string }>()
 
 const contacts = computed(() => contactItems(props.data.basics))
 </script>
@@ -18,26 +18,21 @@ const contacts = computed(() => contactItems(props.data.basics))
     :class="options.headerLayout === 'left' ? 'is-left' : 'is-centered'"
   >
     <header v-if="data.basics.name || contacts.length || data.basics.summary" class="r-header">
+            <img v-if="photo" class="r-photo" :src="photo" alt="" />
       <h1 v-if="data.basics.name" class="r-name">{{ data.basics.name }}</h1>
       <p v-if="data.basics.label" class="r-label">{{ data.basics.label }}</p>
 
       <p v-if="contacts.length" class="r-contact">
         <template v-if="options.showIcons">
           <span v-for="c in contacts" :key="c.text" class="r-contact-item">
-            <Icon :name="c.icon" />
-            <a v-if="c.url" class="r-link" :href="c.url" target="_blank" rel="noopener noreferrer">{{
-              c.text
-            }}</a>
-            <span v-else>{{ c.text }}</span>
+            <Icon :name="c.icon ?? 'link'" />
+            <span>{{ c.text }}</span>
           </span>
         </template>
         <template v-else>
           <template v-for="(c, i) in contacts" :key="c.text">
             <span v-if="i > 0" class="r-sep">·</span>
-            <a v-if="c.url" class="r-link" :href="c.url" target="_blank" rel="noopener noreferrer">{{
-              c.text
-            }}</a>
-            <span v-else>{{ c.text }}</span>
+            <span>{{ c.text }}</span>
           </template>
         </template>
       </p>
@@ -219,5 +214,21 @@ const contacts = computed(() => contactItems(props.data.basics))
   background: #f1f5f9;
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
   font-size: 0.92em;
+}
+.r-photo {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.is-centered .r-photo {
+  display: block;
+  margin: 0 auto 10px;
+}
+
+.is-left .r-photo {
+  display: block;
+  margin: 0 0 10px;
 }
 </style>

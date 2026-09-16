@@ -6,6 +6,7 @@ import { parseResume } from '@/markdown/parse'
 import { useResumeStore } from '@/stores/useResumeStore'
 import { templates } from '@/templates/registry'
 import { effectiveOrder } from '@/templates/shared/sectionOrder'
+import { fileToScaledDataUrl } from '@/utils/image'
 import type { Density } from '@/types/resume'
 
 // CM6 较大，CssEditor 懒加载，避免拖累主包
@@ -16,6 +17,19 @@ const store = useResumeStore()
 
 const showCssEditor = ref(false)
 const presetInput = ref<HTMLInputElement | null>(null)
+const photoInput = ref<HTMLInputElement | null>(null)
+
+async function onPhoto(e: Event) {
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+  try {
+    store.setPhoto(await fileToScaledDataUrl(file))
+  } catch {
+    window.alert($t('style.photoFail'))
+  }
+  input.value = ''
+}
 
 const parsed = computed(() => parseResume(store.markdown))
 const orderedIds = computed(() =>
@@ -195,6 +209,33 @@ const idle = 'bg-slate-100 text-slate-600 hover:bg-slate-200'
           />
           {{ $t('style.iconsHint') }}
         </label>
+      </div>
+
+      <div>
+        <p class="mb-1 text-[11px] font-medium text-slate-400">{{ $t('style.photo') }}</p>
+        <div class="flex items-center gap-2">
+          <img
+            v-if="store.activeDoc?.photo"
+            :src="store.activeDoc.photo"
+            class="h-10 w-10 rounded-full object-cover"
+            alt=""
+          />
+          <button
+            class="rounded bg-slate-100 px-2 py-1 text-[11px] text-slate-600 hover:bg-slate-200"
+            @click="photoInput?.click()"
+          >
+            {{ store.activeDoc?.photo ? $t('style.photoReplace') : $t('style.photoUpload') }}
+          </button>
+          <button
+            v-if="store.activeDoc?.photo"
+            class="rounded bg-slate-100 px-2 py-1 text-[11px] text-slate-600 hover:bg-slate-200"
+            @click="store.setPhoto(null)"
+          >
+            {{ $t('style.photoRemove') }}
+          </button>
+          <input ref="photoInput" type="file" accept="image/*" class="hidden" @change="onPhoto" />
+        </div>
+        <p class="mt-1 text-[10px] leading-4 text-slate-400">{{ $t('style.photoHint') }}</p>
       </div>
 
       <div v-if="orderedIds.length > 1">

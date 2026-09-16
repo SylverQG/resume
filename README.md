@@ -9,6 +9,8 @@
 - **三层样式自定义**：内置模板 → 可视化样式面板（主题色 / 字体 / 字号 / 密度 / 区块排序）→ 自定义 CSS（自动限定作用域，预览与导出一致）
 - **样式方案**：整套外观保存为方案随时切换，支持 JSON 导入导出
 - **多份简历管理**：新建 / 复制 / 重命名 / 删除 / 切换，内容与外观随简历各自保存（如「中文版」「投 A 公司版」）
+- **简历照片**：样式面板上传（本地压缩存储），12 个模板均设计照片位，未上传时自动收起
+- **纸质友好**：联系方式一律渲染为纯文本（如 `github.com/zhangsan`、`微信 zhangsan_123`），不生成超链接
 - **长度提示**：页数徽标 + 目标页数（1 页 / 2 页）+ 超页提示 + 一键压缩（可撤销）
 - **多格式导入导出**：Markdown、JSON Resume 双向转换、浏览器打印导出 PDF（矢量文字，可被 ATS 解析）
 - **中英双语**：默认中文，一键切换英文；示例简历跟随语言
@@ -37,6 +39,7 @@ label: 前端开发工程师
 phone: '138xxxx0000'
 email: zhangsan@example.com
 github: https://github.com/zhangsan
+wechat: 'zhangsan_123'
 location: 上海
 ---
 
@@ -62,7 +65,7 @@ location: 上海
 
 | 语法 | 含义 |
 |---|---|
-| frontmatter | 姓名 / 头衔 / 联系方式 / 链接（github、homepage、blog 等） |
+| frontmatter | 姓名 / 头衔 / 联系方式；社交账号支持 github、linkedin、微信（wechat）、QQ（qq）、微博（weibo）、小红书（xiaohongshu）、twitter、instagram、facebook、telegram、homepage、blog |
 | `# ` | 姓名（缺省时取 frontmatter.name） |
 | `> ` | 个人简介，置于头部下方 |
 | `## ` | 区块标题（工作经历 / 教育经历 / 项目经历 / 技能…未识别的按自定义区块渲染） |

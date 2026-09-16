@@ -27,13 +27,16 @@ const extensions = computed(() => [
       <span class="text-xs font-medium text-slate-400">Markdown</span>
       <span class="text-[10px] text-slate-600">{{ $t('editor.autosave') }}</span>
     </div>
-    <Codemirror
-      class="min-h-0 flex-1 overflow-hidden"
-      :model-value="store.markdown"
-      :extensions="extensions"
-      :tab-size="2"
-      @update:model-value="store.setMarkdown"
-    />
+    <!-- 外层容器由 flex 决定高度，CodeMirror 在其中撑满并内部滚动，保证最后一行可达 -->
+    <div class="min-h-0 flex-1 overflow-hidden">
+      <Codemirror
+        class="h-full"
+        :model-value="store.markdown"
+        :extensions="extensions"
+        :tab-size="2"
+        @update:model-value="store.setMarkdown"
+      />
+    </div>
   </section>
 </template>
 
@@ -44,6 +47,7 @@ const extensions = computed(() => [
 }
 
 .editor-panel :deep(.cm-scroller) {
+  overflow: auto;
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
 }
 </style>

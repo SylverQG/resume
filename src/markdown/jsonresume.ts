@@ -98,9 +98,32 @@ export function toJsonResume(data: ResumeData): Record<string, unknown> {
   return clean({ basics, work, education, projects, skills })
 }
 
-const LINK_KEYS = ['github', 'gitee', 'linkedin', 'blog', 'homepage'] as const
+const LINK_KEYS = [
+  'github',
+  'gitee',
+  'linkedin',
+  'wechat',
+  'qq',
+  'weibo',
+  'xiaohongshu',
+  'twitter',
+  'x',
+  'instagram',
+  'facebook',
+  'telegram',
+  'blog',
+  'homepage',
+] as const
 
 function linkKey(network: string): (typeof LINK_KEYS)[number] {
+  const zhToKey: Record<string, (typeof LINK_KEYS)[number]> = {
+    微信: 'wechat',
+    微博: 'weibo',
+    小红书: 'xiaohongshu',
+    主页: 'homepage',
+    博客: 'blog',
+  }
+  if (zhToKey[network]) return zhToKey[network]
   const n = network.toLowerCase()
   return (LINK_KEYS.find((k) => n.includes(k)) ?? 'homepage') as (typeof LINK_KEYS)[number]
 }

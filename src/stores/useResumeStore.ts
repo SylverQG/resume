@@ -48,6 +48,7 @@ function normalizeDoc(raw: unknown, fallbackName: string): ResumeDoc | null {
         ? (r.optionsByTemplate as Record<string, StyleOptions>)
         : {},
     customCss: typeof r.customCss === 'string' ? r.customCss : '',
+    photo: typeof r.photo === 'string' ? r.photo : undefined,
   }
 }
 
@@ -269,6 +270,14 @@ export const useResumeStore = defineStore('resume', () => {
     if (resumes.value.some((r) => r.id === id)) activeResumeId.value = id
   }
 
+  /** 设置 / 移除当前简历的照片（本地压缩后的 dataURL） */
+  function setPhoto(dataUrl: string | null) {
+    const doc = activeDoc.value
+    if (!doc) return
+    doc.photo = dataUrl ?? undefined
+    doc.updatedAt = Date.now()
+  }
+
   // ---- 样式方案（全局库，应用时写入当前简历） ----
 
   function savePreset(name: string): ThemePreset | null {
@@ -401,6 +410,7 @@ export const useResumeStore = defineStore('resume', () => {
     renameResume,
     deleteResume,
     switchResume,
+    setPhoto,
     savePreset,
     applyPreset,
     deletePreset,

@@ -6,7 +6,7 @@ import type { ResumeData, StyleOptions } from '@/types/resume'
 
 import { contactItems } from '../shared/useContacts'
 
-const props = defineProps<{ data: ResumeData; options: StyleOptions }>()
+const props = defineProps<{ data: ResumeData; options: StyleOptions; photo?: string }>()
 
 const contacts = computed(() => contactItems(props.data.basics))
 </script>
@@ -14,13 +14,13 @@ const contacts = computed(() => contactItems(props.data.basics))
 <template>
   <div class="r-minimal" :class="options.headerLayout === 'center' ? 'is-centered' : 'is-left'">
     <header class="mn-header">
+            <img v-if="photo" class="mn-photo" :src="photo" alt="" />
       <h1 v-if="data.basics.name" class="mn-name">{{ data.basics.name }}</h1>
       <p v-if="data.basics.label" class="mn-label">{{ data.basics.label }}</p>
       <p v-if="contacts.length" class="mn-contact">
         <template v-for="(c, i) in contacts" :key="c.text">
           <span v-if="i > 0" class="mn-sep">/</span>
-          <a v-if="c.url" :href="c.url" target="_blank" rel="noopener noreferrer">{{ c.text }}</a>
-          <span v-else>{{ c.text }}</span>
+          <span>{{ c.text }}</span>
         </template>
       </p>
     </header>
@@ -162,5 +162,17 @@ const contacts = computed(() => contactItems(props.data.basics))
 
 .mn-bullets :deep(strong) {
   font-weight: 600;
+}
+.mn-photo {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+
+.is-centered .mn-photo {
+  margin-left: auto;
+  margin-right: auto;
 }
 </style>

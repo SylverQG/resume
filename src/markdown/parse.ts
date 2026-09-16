@@ -23,11 +23,20 @@ import type {
 
 const processor = unified().use(remarkParse).use(remarkGfm).use(remarkFrontmatter, ['yaml'])
 
-/** 已知 frontmatter 链接字段 → 展示名 */
+/** 已知 frontmatter 社交/链接字段 → 展示名 */
 const LINK_LABELS: Record<string, string> = {
   github: 'GitHub',
   gitee: 'Gitee',
   linkedin: 'LinkedIn',
+  wechat: '微信',
+  qq: 'QQ',
+  weibo: '微博',
+  xiaohongshu: '小红书',
+  twitter: 'Twitter',
+  x: 'X',
+  instagram: 'Instagram',
+  facebook: 'Facebook',
+  telegram: 'Telegram',
   homepage: '主页',
   website: '主页',
   blog: '博客',

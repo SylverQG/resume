@@ -7,7 +7,7 @@ import type { ResumeData, StyleOptions } from '@/types/resume'
 import Icon from '../shared/Icon.vue'
 import { contactItems } from '../shared/useContacts'
 
-const props = defineProps<{ data: ResumeData; options: StyleOptions }>()
+const props = defineProps<{ data: ResumeData; options: StyleOptions; photo?: string }>()
 
 const contacts = computed(() => contactItems(props.data.basics))
 
@@ -18,15 +18,15 @@ const monogram = computed(() => (props.data.basics.name ?? '简').trim().charAt(
 <template>
   <div class="r-cards">
     <header class="cd-header">
-      <span class="cd-mono">{{ monogram }}</span>
+      <img v-if="photo" class="cd-mono cd-mono-img" :src="photo" alt="" />
+      <span v-else class="cd-mono">{{ monogram }}</span>
       <div class="cd-heading">
         <h1 v-if="data.basics.name" class="cd-name">{{ data.basics.name }}</h1>
         <p v-if="data.basics.label" class="cd-label">{{ data.basics.label }}</p>
         <p v-if="contacts.length" class="cd-contact">
           <span v-for="c in contacts" :key="c.text" class="cd-contact-item">
-            <Icon :name="c.icon" />
-            <a v-if="c.url" :href="c.url" target="_blank" rel="noopener noreferrer">{{ c.text }}</a>
-            <span v-else>{{ c.text }}</span>
+            <Icon :name="c.icon ?? 'link'" />
+            <span>{{ c.text }}</span>
           </span>
         </p>
       </div>
@@ -206,5 +206,8 @@ const monogram = computed(() => (props.data.basics.name ?? '简').trim().charAt(
   background: #eef2f7;
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
   font-size: 0.92em;
+}
+.cd-mono-img {
+  object-fit: cover;
 }
 </style>

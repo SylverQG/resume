@@ -6,7 +6,7 @@ import type { ResumeData, StyleOptions } from '@/types/resume'
 
 import { contactItems } from '../shared/useContacts'
 
-const props = defineProps<{ data: ResumeData; options: StyleOptions }>()
+const props = defineProps<{ data: ResumeData; options: StyleOptions; photo?: string }>()
 
 const contacts = computed(() => contactItems(props.data.basics))
 
@@ -18,13 +18,13 @@ const num = (i: number) => String(i + 1).padStart(2, '0')
   <div class="r-swiss">
     <header class="sw-header">
       <div class="sw-heading">
+                <img v-if="photo" class="sw-photo" :src="photo" alt="" />
         <h1 v-if="data.basics.name" class="sw-name">{{ data.basics.name }}</h1>
         <p v-if="data.basics.label" class="sw-label">{{ data.basics.label }}</p>
       </div>
       <div v-if="contacts.length" class="sw-contact">
         <template v-for="c in contacts" :key="c.text">
-          <a v-if="c.url" :href="c.url" target="_blank" rel="noopener noreferrer">{{ c.text }}</a>
-          <span v-else>{{ c.text }}</span>
+          <span>{{ c.text }}</span>
         </template>
       </div>
     </header>
@@ -184,5 +184,11 @@ const num = (i: number) => String(i + 1).padStart(2, '0')
   background: #f3f4f6;
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
   font-size: 0.92em;
+}
+.sw-photo {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  margin-bottom: 8px;
 }
 </style>

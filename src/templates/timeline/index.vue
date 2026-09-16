@@ -7,7 +7,7 @@ import type { ResumeData, StyleOptions } from '@/types/resume'
 import Icon from '../shared/Icon.vue'
 import { contactItems } from '../shared/useContacts'
 
-const props = defineProps<{ data: ResumeData; options: StyleOptions }>()
+const props = defineProps<{ data: ResumeData; options: StyleOptions; photo?: string }>()
 
 const contacts = computed(() => contactItems(props.data.basics))
 </script>
@@ -15,13 +15,13 @@ const contacts = computed(() => contactItems(props.data.basics))
 <template>
   <div class="r-timeline" :class="options.headerLayout === 'center' ? 'is-centered' : 'is-left'">
     <header class="rt-header">
+            <img v-if="photo" class="rt-photo" :src="photo" alt="" />
       <h1 v-if="data.basics.name" class="rt-name">{{ data.basics.name }}</h1>
       <p v-if="data.basics.label" class="rt-label">{{ data.basics.label }}</p>
       <p v-if="contacts.length" class="rt-contact">
         <span v-for="c in contacts" :key="c.text" class="rt-contact-item">
-          <Icon :name="c.icon" />
-          <a v-if="c.url" :href="c.url" target="_blank" rel="noopener noreferrer">{{ c.text }}</a>
-          <span v-else>{{ c.text }}</span>
+          <Icon :name="c.icon ?? 'link'" />
+          <span>{{ c.text }}</span>
         </span>
       </p>
       <p v-if="data.basics.summary" class="rt-summary">{{ data.basics.summary }}</p>
@@ -214,5 +214,17 @@ const contacts = computed(() => contactItems(props.data.basics))
   background: #f6f3ee;
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
   font-size: 0.92em;
+}
+.rt-photo {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+
+.is-centered .rt-photo {
+  margin-left: auto;
+  margin-right: auto;
 }
 </style>

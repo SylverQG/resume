@@ -6,7 +6,7 @@ import type { ResumeData, StyleOptions } from '@/types/resume'
 
 import { contactItems } from '../shared/useContacts'
 
-const props = defineProps<{ data: ResumeData; options: StyleOptions }>()
+const props = defineProps<{ data: ResumeData; options: StyleOptions; photo?: string }>()
 
 const contacts = computed(() => contactItems(props.data.basics))
 </script>
@@ -15,13 +15,13 @@ const contacts = computed(() => contactItems(props.data.basics))
   <div class="r-ledger">
     <header class="lg-header">
       <div>
+                <img v-if="photo" class="lg-photo" :src="photo" alt="" />
         <h1 v-if="data.basics.name" class="lg-name">{{ data.basics.name }}</h1>
         <p v-if="data.basics.label" class="lg-label">{{ data.basics.label }}</p>
       </div>
       <div v-if="contacts.length" class="lg-contact">
         <template v-for="c in contacts" :key="c.text">
-          <a v-if="c.url" :href="c.url" target="_blank" rel="noopener noreferrer">{{ c.text }}</a>
-          <span v-else>{{ c.text }}</span>
+          <span>{{ c.text }}</span>
         </template>
       </div>
     </header>
@@ -172,5 +172,13 @@ const contacts = computed(() => contactItems(props.data.basics))
   background: #f5f3ff;
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
   font-size: 0.92em;
+}
+.lg-photo {
+  display: block;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 8px;
 }
 </style>

@@ -5,6 +5,7 @@ label: Frontend Engineer
 phone: '+86 138 xxxx 0000'
 email: zhangsan@example.com
 github: https://github.com/zhangsan
+wechat: 'zhangsan_123'
 location: Shanghai
 ---
 

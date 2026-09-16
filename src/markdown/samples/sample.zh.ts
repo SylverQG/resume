@@ -5,6 +5,7 @@ label: 前端开发工程师
 phone: '138xxxx0000'
 email: zhangsan@example.com
 github: https://github.com/zhangsan
+wechat: 'zhangsan_123'
 location: 上海
 ---
 

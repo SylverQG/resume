@@ -7,7 +7,7 @@ import type { ResumeData, StyleOptions } from '@/types/resume'
 import Icon from '../shared/Icon.vue'
 import { contactItems } from '../shared/useContacts'
 
-const props = defineProps<{ data: ResumeData; options: StyleOptions }>()
+const props = defineProps<{ data: ResumeData; options: StyleOptions; photo?: string }>()
 
 const contacts = computed(() => contactItems(props.data.basics))
 
@@ -23,15 +23,15 @@ const hasAsideContent = computed(
 <template>
   <div class="r-sidebar">
     <aside v-if="hasAsideContent" class="rs-aside">
+            <img v-if="photo" class="rs-photo" :src="photo" alt="" />
       <h1 v-if="data.basics.name" class="rs-name">{{ data.basics.name }}</h1>
       <p v-if="data.basics.label" class="rs-label">{{ data.basics.label }}</p>
       <p v-if="data.basics.summary" class="rs-summary">{{ data.basics.summary }}</p>
 
       <div v-if="contacts.length" class="rs-contacts">
         <span v-for="c in contacts" :key="c.text" class="rs-contact">
-          <Icon :name="c.icon" />
-          <a v-if="c.url" :href="c.url" target="_blank" rel="noopener noreferrer">{{ c.text }}</a>
-          <span v-else>{{ c.text }}</span>
+          <Icon :name="c.icon ?? 'link'" />
+          <span>{{ c.text }}</span>
         </span>
       </div>
 
@@ -242,5 +242,12 @@ const hasAsideContent = computed(
   background: #eef2f7;
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
   font-size: 0.92em;
+}
+.rs-photo {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 10px;
 }
 </style>

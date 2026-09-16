@@ -7,7 +7,7 @@ import type { ResumeData, ResumeItem, StyleOptions } from '@/types/resume'
 import Icon from '../shared/Icon.vue'
 import { contactItems } from '../shared/useContacts'
 
-const props = defineProps<{ data: ResumeData; options: StyleOptions }>()
+const props = defineProps<{ data: ResumeData; options: StyleOptions; photo?: string }>()
 
 const contacts = computed(() => contactItems(props.data.basics))
 
@@ -23,13 +23,13 @@ function isChips(item: ResumeItem): boolean {
       class="rb-header"
       :class="options.headerLayout === 'left' ? 'is-left' : 'is-centered'"
     >
+            <img v-if="photo" class="rb-photo" :src="photo" alt="" />
       <h1 v-if="data.basics.name" class="rb-name">{{ data.basics.name }}</h1>
       <p v-if="data.basics.label" class="rb-label">{{ data.basics.label }}</p>
       <p v-if="contacts.length" class="rb-contact">
         <span v-for="c in contacts" :key="c.text" class="rb-contact-item">
-          <Icon :name="c.icon" />
-          <a v-if="c.url" :href="c.url" target="_blank" rel="noopener noreferrer">{{ c.text }}</a>
-          <span v-else>{{ c.text }}</span>
+          <Icon :name="c.icon ?? 'link'" />
+          <span>{{ c.text }}</span>
         </span>
       </p>
     </header>
@@ -224,5 +224,17 @@ function isChips(item: ResumeItem): boolean {
   background: #eef2ff;
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
   font-size: 0.92em;
+}
+.rb-photo {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 0 auto 8px;
+  border: 2px solid rgba(255, 255, 255, 0.55);
+}
+
+.is-left .rb-photo {
+  margin: 0 0 8px;
 }
 </style>

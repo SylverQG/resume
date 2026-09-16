@@ -51,6 +51,8 @@ export interface ResumeDoc {
   templateId: string
   optionsByTemplate: Record<string, StyleOptions>
   customCss: string
+  /** 简历照片（本地压缩后的 JPEG dataURL；未上传时模板不预留照片位） */
+  photo?: string
 }
 
 /** L2 样式面板可调项（§3.6）；映射为 .resume-page 上的 CSS Variables */
