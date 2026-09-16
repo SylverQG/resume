@@ -179,9 +179,9 @@ const contacts = computed(() => contactItems(props.data.basics))
 
 .lg-photo {
   float: left;
-  height: 64px;
+  height: calc(64px * var(--photo-scale, 1));
   width: auto;
-  max-width: 48px;
+  max-width: calc(48px * var(--photo-scale, 1));
   object-fit: cover;
   margin: 0 10px 4px 0;
 }

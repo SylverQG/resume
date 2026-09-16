@@ -184,14 +184,14 @@ const contacts = computed(() => contactItems(props.data.basics))
   position: absolute;
   top: 0;
   right: 0;
-  height: 56px;
+  height: calc(56px * var(--photo-scale, 1));
   width: auto;
-  max-width: 44px;
+  max-width: calc(44px * var(--photo-scale, 1));
   object-fit: cover;
 }
 
 .cp-header:has(.cp-photo) {
-  min-height: 60px;
-  padding-right: 56px;
+  min-height: calc(60px * var(--photo-scale, 1));
+  padding-right: calc(56px * var(--photo-scale, 1));
 }
 </style>

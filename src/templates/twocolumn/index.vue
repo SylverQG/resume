@@ -180,9 +180,9 @@ const contacts = computed(() => contactItems(props.data.basics))
 
 .tc-photo {
   float: left;
-  height: 64px;
+  height: calc(64px * var(--photo-scale, 1));
   width: auto;
-  max-width: 52px;
+  max-width: calc(52px * var(--photo-scale, 1));
   object-fit: cover;
   margin: 0 10px 4px 0;
 }

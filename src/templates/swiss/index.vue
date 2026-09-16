@@ -191,9 +191,9 @@ const num = (i: number) => String(i + 1).padStart(2, '0')
 
 .sw-photo {
   float: left;
-  height: 72px;
+  height: calc(72px * var(--photo-scale, 1));
   width: auto;
-  max-width: 56px;
+  max-width: calc(56px * var(--photo-scale, 1));
   object-fit: cover;
   margin: 0 12px 6px 0;
 }

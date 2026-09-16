@@ -23,14 +23,13 @@ async function onPhoto(e: Event) {
   const input = e.target as HTMLInputElement
   const file = input.files?.[0]
   if (!file) return
+  if (file.size > 1_000_000) {
+    window.alert($t('style.photoTooLarge'))
+    input.value = ''
+    return
+  }
   try {
-    const dataUrl = await fileToDataUrl(file)
-    // 不压缩存储；超大照片可能超出 localStorage 上限，上传前提示
-    if (dataUrl.length > 2_500_000 && !window.confirm($t('style.photoLarge'))) {
-      input.value = ''
-      return
-    }
-    store.setPhoto(dataUrl)
+    store.setPhoto(await fileToDataUrl(file))
   } catch {
     window.alert($t('style.photoFail'))
   }
@@ -242,6 +241,23 @@ const idle = 'bg-slate-100 text-slate-600 hover:bg-slate-200'
           <input ref="photoInput" type="file" accept="image/*" class="hidden" @change="onPhoto" />
         </div>
         <p class="mt-1 text-[10px] leading-4 text-slate-400">{{ $t('style.photoHint') }}</p>
+        <div v-if="store.activeDoc?.photo" class="mt-1.5 flex items-center gap-2">
+          <span class="shrink-0 text-[10px] text-slate-400">{{ $t('style.photoSize') }}</span>
+          <input
+            type="range"
+            min="0.6"
+            max="1.6"
+            step="0.05"
+            :value="store.activeDoc?.photoScale ?? 1"
+            class="min-w-0 flex-1 accent-sky-600"
+            @input="
+              store.setPhotoScale(Number(($event.target as HTMLInputElement).value))
+            "
+          />
+          <span class="w-10 shrink-0 text-right text-[10px] text-slate-500">
+            {{ Math.round((store.activeDoc?.photoScale ?? 1) * 100) }}%
+          </span>
+        </div>
       </div>
 
       <div v-if="orderedIds.length > 1">

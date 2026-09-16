@@ -49,6 +49,7 @@ function normalizeDoc(raw: unknown, fallbackName: string): ResumeDoc | null {
         : {},
     customCss: typeof r.customCss === 'string' ? r.customCss : '',
     photo: typeof r.photo === 'string' ? r.photo : undefined,
+    photoScale: typeof r.photoScale === 'number' ? r.photoScale : undefined,
   }
 }
 
@@ -270,11 +271,19 @@ export const useResumeStore = defineStore('resume', () => {
     if (resumes.value.some((r) => r.id === id)) activeResumeId.value = id
   }
 
-  /** 设置 / 移除当前简历的照片（本地压缩后的 dataURL） */
+  /** 设置 / 移除当前简历的照片（本地原始分辨率 dataURL） */
   function setPhoto(dataUrl: string | null) {
     const doc = activeDoc.value
     if (!doc) return
     doc.photo = dataUrl ?? undefined
+    doc.updatedAt = Date.now()
+  }
+
+  /** 照片显示缩放（1 = 模板默认尺寸） */
+  function setPhotoScale(scale: number) {
+    const doc = activeDoc.value
+    if (!doc) return
+    doc.photoScale = scale
     doc.updatedAt = Date.now()
   }
 
@@ -411,6 +420,7 @@ export const useResumeStore = defineStore('resume', () => {
     deleteResume,
     switchResume,
     setPhoto,
+    setPhotoScale,
     savePreset,
     applyPreset,
     deletePreset,

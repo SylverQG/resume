@@ -209,14 +209,14 @@ const contacts = computed(() => contactItems(props.data.basics))
   position: absolute;
   top: 0;
   right: 0;
-  height: 80px;
+  height: calc(80px * var(--photo-scale, 1));
   width: auto;
-  max-width: 104px;
+  max-width: calc(104px * var(--photo-scale, 1));
   object-fit: cover;
 }
 
 .sf-header:has(.sf-photo) {
-  min-height: 88px;
-  padding-right: 112px;
+  min-height: calc(88px * var(--photo-scale, 1));
+  padding-right: calc(112px * var(--photo-scale, 1));
 }
 </style>

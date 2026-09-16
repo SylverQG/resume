@@ -24,7 +24,10 @@ const resumeData = computed<ResumeData>(() => {
 })
 
 const template = computed(() => getTemplate(store.templateId))
-const vars = computed(() => styleVars(store.styleOptions))
+const vars = computed(() => ({
+  ...styleVars(store.styleOptions),
+  '--photo-scale': String(store.activeDoc?.photoScale ?? 1),
+}))
 
 const isEmpty = computed(
   () =>
@@ -117,16 +120,19 @@ async function compressToFit() {
           <span class="page-break-tag">p{{ i + 1 }}</span>
         </div>
 
-        <!-- 空状态提示（模板不再内置文案，便于 i18n） -->
-        <div v-if="isEmpty" class="absolute inset-0 flex items-center justify-center px-10 text-center">
+        <!-- 空状态提示（模板不再内置文案，便于 i18n；打印时隐藏） -->
+        <div
+          v-if="isEmpty"
+          class="preview-empty absolute inset-0 flex items-center justify-center px-10 text-center"
+        >
           <p class="text-sm leading-6 text-slate-400">{{ $t('preview.empty') }}</p>
         </div>
       </div>
     </section>
 
-    <!-- 长度提示徽标（§3.6） -->
+    <!-- 长度提示徽标（§3.6，打印时隐藏） -->
     <div
-      class="absolute right-5 top-5 z-10 flex flex-col items-end gap-1.5"
+      class="preview-badge absolute right-5 top-5 z-10 flex flex-col items-end gap-1.5"
       :title="$t('preview.printNote')"
     >
       <div

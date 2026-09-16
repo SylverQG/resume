@@ -14,14 +14,26 @@
     background: #fff !important;
   }
 
+  /* 应用脚手架（flex 三栏 + 绝对定位的预览容器）在打印时还原为普通文档流：
+     绝对定位容器参与分页时会被裁剪，导致 PDF 只有第一页或大面积空白 */
+  #app > div,
+  main {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
   .app-toolbar,
   .editor-panel {
     display: none !important;
   }
 
   .preview-panel {
-    padding: 0 !important;
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
     overflow: visible !important;
+    padding: 0 !important;
     background: #fff !important;
   }
 
@@ -29,8 +41,10 @@
     width: auto !important;
   }
 
-  /* 分页提示线仅用于预览 */
-  .page-break {
+  /* 分页提示线 / 页数徽标 / 空状态提示仅用于预览 */
+  .page-break,
+  .preview-badge,
+  .preview-empty {
     display: none !important;
   }
 
@@ -40,7 +54,7 @@
     border-radius: 0 !important;
   }
 
-  /* 深色头部/侧栏、头像块等背景色必须原样打印（Chrome 默认不打印背景） */
+  /* 深色头部/侧栏、照片等必须原样打印（Chrome 默认不打印背景） */
   .resume-page {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
