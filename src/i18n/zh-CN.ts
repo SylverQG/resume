@@ -4,7 +4,7 @@ export default {
     export: '导出 PDF',
     template: '模板',
     style: '样式',
-    exportTip: '使用浏览器打印导出，建议 Chrome / Edge',
+    exportTip: '打印对话框中，目标需选「另存为 PDF」（勿选 Microsoft Print to PDF），建议勾选「背景图形」',
     resumeSuffix: '- 简历',
   },
   manager: {

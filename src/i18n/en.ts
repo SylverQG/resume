@@ -4,7 +4,7 @@ export default {
     export: 'Export PDF',
     template: 'Templates',
     style: 'Style',
-    exportTip: 'Export via browser print. Chrome / Edge recommended',
+    exportTip: 'In the print dialog, set the destination to "Save as PDF" (not Microsoft Print to PDF) and enable "Background graphics"',
     resumeSuffix: '- Resume',
   },
   manager: {

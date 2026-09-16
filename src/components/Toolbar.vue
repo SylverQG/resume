@@ -34,7 +34,7 @@ function exportPdf() {
   // Chrome 以页面标题命名 PDF：临时换成简历名，导出文件即「<简历名>-简历.pdf」，
   // 也避免多次导出同名覆盖 / 误开旧文件
   const previous = document.title
-  document.title = `${store.activeDoc?.name ?? 'resume'}-${t('toolbar.resume')}`
+  document.title = `${store.activeDoc?.name ?? 'resume'}-${t('toolbar.resumeSuffix')}`
   window.print()
   document.title = previous
 }
