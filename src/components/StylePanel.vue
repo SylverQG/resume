@@ -78,8 +78,11 @@ function exportPresets() {
   const a = document.createElement('a')
   a.href = url
   a.download = 'resume-presets.json'
+  document.body.appendChild(a)
   a.click()
-  URL.revokeObjectURL(url)
+  a.remove()
+  // 立即 revoke 可能中断尚未开始的下载，延迟释放
+  setTimeout(() => URL.revokeObjectURL(url), 10_000)
 }
 
 async function onPresetFile(e: Event) {
