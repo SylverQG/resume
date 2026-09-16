@@ -5,6 +5,7 @@ export default {
     template: '模板',
     style: '样式',
     exportTip: '使用浏览器打印导出，建议 Chrome / Edge',
+    resumeSuffix: '- 简历',
   },
   manager: {
     title: '简历列表',

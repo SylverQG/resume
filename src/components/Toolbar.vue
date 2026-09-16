@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 import { sampleEn } from '@/markdown/samples/sample.en'
 import { sampleZh } from '@/markdown/samples/sample.zh'
@@ -10,6 +11,7 @@ import ResumeManager from './ResumeManager.vue'
 import StylePanel from './StylePanel.vue'
 import TemplatePicker from './TemplatePicker.vue'
 
+const { t } = useI18n()
 const store = useResumeStore()
 
 const openPanel = ref<'resumes' | 'template' | 'style' | 'file' | null>(null)
@@ -29,7 +31,12 @@ function toggleLocale() {
 }
 
 function exportPdf() {
+  // Chrome 以页面标题命名 PDF：临时换成简历名，导出文件即「<简历名>-简历.pdf」，
+  // 也避免多次导出同名覆盖 / 误开旧文件
+  const previous = document.title
+  document.title = `${store.activeDoc?.name ?? 'resume'}-${t('toolbar.resume')}`
   window.print()
+  document.title = previous
 }
 
 // 点击工具栏以外区域时收起下拉面板

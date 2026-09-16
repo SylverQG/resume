@@ -5,6 +5,7 @@ export default {
     template: 'Templates',
     style: 'Style',
     exportTip: 'Export via browser print. Chrome / Edge recommended',
+    resumeSuffix: '- Resume',
   },
   manager: {
     title: 'Resumes',
