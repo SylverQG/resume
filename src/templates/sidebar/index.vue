@@ -244,9 +244,9 @@ const hasAsideContent = computed(
   font-size: 0.92em;
 }
 .rs-photo {
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
+  height: 88px;
+  width: auto;
+  max-width: 72px;
   object-fit: cover;
   margin-bottom: 10px;
 }

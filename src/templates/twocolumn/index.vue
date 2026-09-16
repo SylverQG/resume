@@ -174,12 +174,16 @@ const contacts = computed(() => contactItems(props.data.basics))
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
   font-size: 0.92em;
 }
+.tc-header > div:first-child {
+  overflow: hidden;
+}
+
 .tc-photo {
-  display: block;
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
+  float: left;
+  height: 64px;
+  width: auto;
+  max-width: 52px;
   object-fit: cover;
-  margin-bottom: 8px;
+  margin: 0 10px 4px 0;
 }
 </style>

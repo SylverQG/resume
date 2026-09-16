@@ -6,7 +6,7 @@ import { parseResume } from '@/markdown/parse'
 import { useResumeStore } from '@/stores/useResumeStore'
 import { templates } from '@/templates/registry'
 import { effectiveOrder } from '@/templates/shared/sectionOrder'
-import { fileToScaledDataUrl } from '@/utils/image'
+import { fileToDataUrl } from '@/utils/image'
 import type { Density } from '@/types/resume'
 
 // CM6 较大，CssEditor 懒加载，避免拖累主包
@@ -24,7 +24,13 @@ async function onPhoto(e: Event) {
   const file = input.files?.[0]
   if (!file) return
   try {
-    store.setPhoto(await fileToScaledDataUrl(file))
+    const dataUrl = await fileToDataUrl(file)
+    // 不压缩存储；超大照片可能超出 localStorage 上限，上传前提示
+    if (dataUrl.length > 2_500_000 && !window.confirm($t('style.photoLarge'))) {
+      input.value = ''
+      return
+    }
+    store.setPhoto(dataUrl)
   } catch {
     window.alert($t('style.photoFail'))
   }

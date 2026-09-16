@@ -176,16 +176,22 @@ const contacts = computed(() => contactItems(props.data.basics))
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
   font-size: 0.92em;
 }
-.cp-photo {
-  display: block;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  object-fit: cover;
-  margin: 0 auto 6px;
+.cp-header {
+  position: relative;
 }
 
-.is-left .cp-photo {
-  margin: 0 0 6px;
+.cp-photo {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 56px;
+  width: auto;
+  max-width: 44px;
+  object-fit: cover;
+}
+
+.cp-header:has(.cp-photo) {
+  min-height: 60px;
+  padding-right: 56px;
 }
 </style>

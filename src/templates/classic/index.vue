@@ -215,20 +215,22 @@ const contacts = computed(() => contactItems(props.data.basics))
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
   font-size: 0.92em;
 }
+.r-header {
+  position: relative;
+}
+
 .r-photo {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 80px;
+  width: auto;
+  max-width: 104px;
   object-fit: cover;
 }
 
-.is-centered .r-photo {
-  display: block;
-  margin: 0 auto 10px;
-}
-
-.is-left .r-photo {
-  display: block;
-  margin: 0 0 10px;
+.r-header:has(.r-photo) {
+  min-height: 88px;
+  padding-right: 112px;
 }
 </style>

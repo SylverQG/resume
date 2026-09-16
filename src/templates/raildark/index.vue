@@ -251,9 +251,9 @@ const mainSections = computed(() => props.data.sections.filter((s) => s.kind !==
   font-size: 0.92em;
 }
 .rd-photo {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
+  height: 84px;
+  width: auto;
+  max-width: 68px;
   object-fit: cover;
   margin-bottom: 12px;
   border: 2px solid rgba(255, 255, 255, 0.45);

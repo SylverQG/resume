@@ -208,6 +208,9 @@ const monogram = computed(() => (props.data.basics.name ?? '简').trim().charAt(
   font-size: 0.92em;
 }
 .cd-mono-img {
+  width: 45px;
+  height: 60px;
+  border-radius: 3px;
   object-fit: cover;
 }
 </style>

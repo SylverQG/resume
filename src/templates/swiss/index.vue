@@ -185,10 +185,16 @@ const num = (i: number) => String(i + 1).padStart(2, '0')
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
   font-size: 0.92em;
 }
+.sw-heading {
+  overflow: hidden;
+}
+
 .sw-photo {
-  width: 56px;
-  height: 56px;
+  float: left;
+  height: 72px;
+  width: auto;
+  max-width: 56px;
   object-fit: cover;
-  margin-bottom: 8px;
+  margin: 0 12px 6px 0;
 }
 </style>

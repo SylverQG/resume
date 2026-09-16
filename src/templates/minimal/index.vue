@@ -163,16 +163,22 @@ const contacts = computed(() => contactItems(props.data.basics))
 .mn-bullets :deep(strong) {
   font-weight: 600;
 }
-.mn-photo {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  object-fit: cover;
-  margin-bottom: 10px;
+.mn-header {
+  position: relative;
 }
 
-.is-centered .mn-photo {
-  margin-left: auto;
-  margin-right: auto;
+.mn-photo {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 80px;
+  width: auto;
+  max-width: 104px;
+  object-fit: cover;
+}
+
+.mn-header:has(.mn-photo) {
+  min-height: 88px;
+  padding-right: 112px;
 }
 </style>

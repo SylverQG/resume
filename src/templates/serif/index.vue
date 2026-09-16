@@ -201,16 +201,22 @@ const contacts = computed(() => contactItems(props.data.basics))
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
   font-size: 0.9em;
 }
-.sf-photo {
-  display: block;
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  object-fit: cover;
-  margin: 0 auto 10px;
+.sf-header {
+  position: relative;
 }
 
-.is-left .sf-photo {
-  margin: 0 0 10px;
+.sf-photo {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 80px;
+  width: auto;
+  max-width: 104px;
+  object-fit: cover;
+}
+
+.sf-header:has(.sf-photo) {
+  min-height: 88px;
+  padding-right: 112px;
 }
 </style>

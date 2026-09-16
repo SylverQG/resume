@@ -225,16 +225,23 @@ function isChips(item: ResumeItem): boolean {
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
   font-size: 0.92em;
 }
+.rb-header {
+  position: relative;
+}
+
 .rb-photo {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 80px;
+  width: auto;
+  max-width: 104px;
   object-fit: cover;
-  margin: 0 auto 8px;
   border: 2px solid rgba(255, 255, 255, 0.55);
 }
 
-.is-left .rb-photo {
-  margin: 0 0 8px;
+.rb-header:has(.rb-photo) {
+  min-height: 88px;
+  padding-right: 112px;
 }
 </style>
