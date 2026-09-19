@@ -67,22 +67,27 @@ const DENSITIES: { label: string; value: Density }[] = [
 
 const presetName = ref('')
 
-// ---- 专业调整：页面边距 / 要点符号（作用于所有模板） ----
-const padCustom = computed(
-  () => store.styleOptions.padY !== undefined || store.styleOptions.padX !== undefined,
-)
+// ---- 基础 / 专业 双标签页 ----
+const activeTab = ref<'basic' | 'pro'>('basic')
 
-function setPadCustom(enabled: boolean) {
-  if (enabled) {
-    store.setOption('padY', 13)
-    store.setOption('padX', 15)
-  } else {
-    store.setOption('padY', undefined)
-    store.setOption('padX', undefined)
-  }
+// ---- 专业调整：页面边距（滑杆 + 精确数字，作用于所有模板） ----
+function setPad(key: 'padY' | 'padX', e: Event, fallback: number) {
+  const v = Number((e.target as HTMLInputElement).value)
+  store.setOption(key, Number.isFinite(v) && v > 0 ? v : fallback)
 }
 
-const BULLET_OPTIONS = ['disc', 'dash', 'none'] as const
+function resetPad() {
+  store.setOption('padY', undefined)
+  store.setOption('padX', undefined)
+}
+
+// ---- 专业调整：要点符号（作用于所有模板） ----
+const BULLET_OPTIONS_WITH_DEFAULT: { v: 'disc' | 'dash' | 'none' | undefined; l: string }[] = [
+  { v: undefined, l: 'style.bl_default' },
+  { v: 'disc', l: 'style.bl_disc' },
+  { v: 'dash', l: 'style.bl_dash' },
+  { v: 'none', l: 'style.bl_none' },
+]
 
 function setBullets(value: 'disc' | 'dash' | 'none' | undefined) {
   store.setOption('bullets', value)
@@ -127,12 +132,29 @@ const idle = 'bg-slate-100 text-slate-600 hover:bg-slate-200'
 </script>
 
 <template>
-  <div
-    class="max-h-[75vh] w-72 overflow-auto rounded-xl border border-slate-200 bg-white p-3 shadow-2xl"
-  >
+  <div class="max-h-[75vh] w-72 overflow-auto rounded-xl border border-slate-200 bg-white p-3 shadow-2xl">
     <p class="px-1 pb-1 text-xs font-medium text-slate-500">{{ $t('style.title') }}</p>
 
-    <div class="space-y-3 p-1">
+    <!-- 基础 / 专业 双标签页 -->
+    <div class="mx-1 mb-2 flex gap-1 rounded-lg bg-slate-100 p-1">
+      <button
+        class="flex-1 rounded px-2 py-1 text-xs"
+        :class="activeTab === 'basic' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500'"
+        @click="activeTab = 'basic'"
+      >
+        {{ $t('style.tabBasic') }}
+      </button>
+      <button
+        class="flex-1 rounded px-2 py-1 text-xs"
+        :class="activeTab === 'pro' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500'"
+        @click="activeTab = 'pro'"
+      >
+        {{ $t('style.tabPro') }}
+      </button>
+    </div>
+
+    <!-- ===== 基础调整 ===== -->
+    <div v-if="activeTab === 'basic'" class="space-y-3 p-1">
       <div>
         <p class="mb-1 text-[11px] font-medium text-slate-400">{{ $t('style.accent') }}</p>
         <div class="flex items-center gap-1.5">
@@ -316,22 +338,6 @@ const idle = 'bg-slate-100 text-slate-600 hover:bg-slate-200'
       </div>
 
       <div>
-        <p class="mb-1 text-[11px] font-medium text-slate-400">{{ $t('css.title') }}</p>
-        <button
-          class="flex w-full items-center justify-between rounded border border-slate-200 px-2 py-1.5 text-xs text-slate-600 hover:bg-slate-50"
-          @click="showCssEditor = true"
-        >
-          {{ $t('css.edit') }}
-          <span
-            v-if="store.customCss"
-            class="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] text-emerald-700"
-          >
-            {{ $t('css.enabled') }}
-          </span>
-        </button>
-      </div>
-
-      <div>
         <p class="mb-1 text-[11px] font-medium text-slate-400">{{ $t('style.presets') }}</p>
         <div class="flex gap-1">
           <input
@@ -399,61 +405,96 @@ const idle = 'bg-slate-100 text-slate-600 hover:bg-slate-200'
           </div>
         </div>
       </div>
+    </div>
 
-      <details class="rounded border border-slate-200 px-2.5 py-2">
-        <summary class="cursor-pointer select-none text-xs font-medium text-slate-500">
-          {{ $t('style.pro') }}
-        </summary>
-        <div class="mt-2 space-y-2.5">
-          <label class="flex items-center justify-between text-xs text-slate-600">
-            {{ $t('style.padCustom') }}
-            <input
-              type="checkbox"
-              class="accent-sky-600"
-              :checked="padCustom"
-              @change="setPadCustom(($event.target as HTMLInputElement).checked)"
-            />
-          </label>
-          <template v-if="padCustom">
-            <label class="block text-[11px] text-slate-500">{{ $t('designer.padY') }}</label>
-            <input
-              type="range"
-              min="6"
-              max="25"
-              step="1"
-              :value="store.styleOptions.padY ?? 13"
-              class="w-full accent-sky-600"
-              @input="store.setOption('padY', Number(($event.target as HTMLInputElement).value))"
-            />
-            <label class="block text-[11px] text-slate-500">{{ $t('designer.padX') }}</label>
-            <input
-              type="range"
-              min="6"
-              max="25"
-              step="1"
-              :value="store.styleOptions.padX ?? 15"
-              class="w-full accent-sky-600"
-              @input="store.setOption('padX', Number(($event.target as HTMLInputElement).value))"
-            />
-          </template>
-          <div>
-            <p class="mb-1 text-[11px] text-slate-500">{{ $t('style.bulletsOverride') }}</p>
-            <div class="grid grid-cols-4 gap-1">
-              <button
-                v-for="b in BULLET_OPTIONS"
-                :key="b"
-                class="rounded px-1 py-1 text-[11px]"
-                :class="(store.styleOptions.bullets ?? 'disc') === b ? active : idle"
-                @click="setBullets(b)"
-              >
-                {{ $t(`style.bl_${b}`) }}
-              </button>
-            </div>
-          </div>
-          <p class="text-[10px] leading-4 text-slate-400">{{ $t('style.proHint') }}</p>
+    <!-- ===== 专业调整 ===== -->
+    <div v-else class="space-y-3 p-1 pt-0">
+      <div>
+        <label class="mb-1 block text-[11px] text-slate-500">{{ $t('designer.padY') }}</label>
+        <div class="flex items-center gap-2">
+          <input
+            type="range"
+            min="6"
+            max="25"
+            step="1"
+            :value="store.styleOptions.padY ?? 13"
+            class="min-w-0 flex-1 accent-sky-600"
+            @input="setPad('padY', $event, 13)"
+          />
+          <input
+            type="number"
+            min="6"
+            max="25"
+            step="1"
+            :value="store.styleOptions.padY ?? 13"
+            class="w-14 rounded border border-slate-200 px-1 py-0.5 text-right text-xs text-slate-600"
+            @input="setPad('padY', $event, 13)"
+          />
+          <span class="text-[10px] text-slate-400">mm</span>
         </div>
-      </details>
+        <label class="mb-1 mt-2 block text-[11px] text-slate-500">{{ $t('designer.padX') }}</label>
+        <div class="flex items-center gap-2">
+          <input
+            type="range"
+            min="6"
+            max="25"
+            step="1"
+            :value="store.styleOptions.padX ?? 15"
+            class="min-w-0 flex-1 accent-sky-600"
+            @input="setPad('padX', $event, 15)"
+          />
+          <input
+            type="number"
+            min="6"
+            max="25"
+            step="1"
+            :value="store.styleOptions.padX ?? 15"
+            class="w-14 rounded border border-slate-200 px-1 py-0.5 text-right text-xs text-slate-600"
+            @input="setPad('padX', $event, 15)"
+          />
+          <span class="text-[10px] text-slate-400">mm</span>
+        </div>
+        <button class="mt-1 text-[10px] text-sky-600 hover:underline" @click="resetPad">
+          {{ $t('style.followDensity') }}
+        </button>
+      </div>
 
+      <div>
+        <p class="mb-1 text-[11px] text-slate-500">{{ $t('style.bulletsOverride') }}</p>
+        <div class="grid grid-cols-4 gap-1">
+          <button
+            v-for="b in BULLET_OPTIONS_WITH_DEFAULT"
+            :key="String(b.v)"
+            class="rounded px-1 py-1 text-[11px]"
+            :class="(store.styleOptions.bullets ?? 'disc') === b.v ? active : idle"
+            @click="setBullets(b.v)"
+          >
+            {{ $t(b.l) }}
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <p class="mb-1 text-[11px] font-medium text-slate-400">{{ $t('css.title') }}</p>
+        <button
+          class="flex w-full items-center justify-between rounded border border-slate-200 px-2 py-1.5 text-xs text-slate-600 hover:bg-slate-50"
+          @click="showCssEditor = true"
+        >
+          {{ $t('css.edit') }}
+          <span
+            v-if="store.customCss"
+            class="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] text-emerald-700"
+          >
+            {{ $t('css.enabled') }}
+          </span>
+        </button>
+      </div>
+
+      <p class="text-[10px] leading-4 text-slate-400">{{ $t('style.proHint') }}</p>
+    </div>
+
+    <!-- 底部：恢复默认 + 自定义 CSS 编辑器挂载 -->
+    <div class="px-1 pb-1">
       <button
         class="w-full rounded border border-slate-200 px-2 py-1.5 text-xs text-slate-500 hover:bg-slate-50"
         @click="store.resetStyle()"
