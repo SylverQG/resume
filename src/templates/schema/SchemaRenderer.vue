@@ -2,8 +2,8 @@
 import { computed, defineComponent, h } from 'vue'
 
 import { RenderInline } from '@/markdown/inline'
-import type { ResumeData, StyleOptions } from '@/types/resume'
-import type { TemplateSchema } from '@/types/schema'
+import type { ResumeData, Section, StyleOptions } from '@/types/resume'
+import type { SchemaBlock, TemplateSchema } from '@/types/schema'
 import { applySectionOrder } from '../shared/sectionOrder'
 import { SANS_STACK, SERIF_STACK } from '../shared/styleVars'
 import { contactItems } from '../shared/useContacts'
@@ -19,12 +19,29 @@ const contacts = computed(() => contactItems(props.data.basics))
 
 const accent = computed(() => props.options?.accentColor ?? props.schema.colors.accent)
 
-const sections = computed(() => {
+/** 可见区块（legacy 模式按 order/hidden 过滤排序；blocks 模式按块存在性） */
+const visibleSections = computed<Section[]>(() => {
   const s = props.schema.section
   return applySectionOrder(props.data.sections, s.order).filter(
     (sec) => !s.hidden.includes(sec.id) && !s.hidden.includes(sec.kind),
   )
 })
+
+/** 块布局（v2）：缺省时按 legacy 合成 */
+const layout = computed(() => {
+  if (props.schema.layout) return props.schema.layout
+  const main: SchemaBlock[] = []
+  if (props.schema.header.show) main.push({ id: 'blk-header', kind: 'header' })
+  for (const sec of visibleSections.value) {
+    main.push({ id: `blk-${sec.id}`, kind: 'section', ref: sec.id })
+  }
+  return { aside: 'none' as const, asideWidth: 32, main, side: [] }
+})
+
+function sectionByRef(ref: string | undefined): Section | undefined {
+  if (!ref) return undefined
+  return props.data.sections.find((s) => s.id === ref || s.kind === ref)
+}
 
 const rootStyle = computed(() => {
   const s = props.schema
@@ -51,8 +68,6 @@ const headerStyle = computed(() => {
   return base
 })
 
-const onBg = computed(() => props.schema.header.bg !== 'none')
-
 const STROKE: Record<string, string> = {
   phone:
     'M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z',
@@ -66,7 +81,6 @@ const STROKE: Record<string, string> = {
     'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z M2 12h20 M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z',
 }
 
-/** 页面内小图标 */
 const IconMini = defineComponent({
   name: 'IconMini',
   props: { name: { type: String, required: true } },
@@ -90,87 +104,214 @@ const IconMini = defineComponent({
       )
   },
 })
+
+/** 单个区块的渲染（标题/段落/条目/要点/技能标签） */
+const BlockSection = defineComponent({
+  name: 'BlockSection',
+  props: {
+    section: { type: Object, required: true },
+    sectionStyle: { type: Object, required: true },
+  },
+  setup(blockProps) {
+    const style = blockProps.sectionStyle as TemplateSchema['section']
+    const items = blockProps.section as Section
+    return () => {
+      const children: ReturnType<typeof h>[] = [
+        h('h2', { class: ['sc-title', `is-${style.titleStyle}`] }, items.title),
+      ]
+      items.paragraphs.forEach((text, i) => {
+        children.push(h('p', { class: 'sc-paragraph', key: `p-${i}` }, [h(RenderInline, { source: text })]))
+      })
+      for (const item of items.items) {
+        if (item.title === '' && style.skillChips) {
+          children.push(
+            h(
+              'div',
+              { class: 'sc-chips' },
+              item.bullets.map((b, j) =>
+                h('span', { class: 'sc-chip', key: `chip-${j}` }, [h(RenderInline, { source: b })]),
+              ),
+            ),
+          )
+          continue
+        }
+        children.push(
+          h('div', { class: 'sc-item' }, [
+            h('div', { class: 'sc-item-head' }, [
+              h('span', { class: 'sc-item-title' }, [
+                item.title,
+                item.subtitle ? h('span', { class: 'sc-item-subtitle' }, item.subtitle) : null,
+              ]),
+              item.date ? h('span', { class: 'sc-item-date' }, item.date) : null,
+            ]),
+            item.bullets.length
+              ? h(
+                  'ul',
+                  { class: ['sc-bullets', `is-${style.bullets}`] },
+                  item.bullets.map((b, j) =>
+                    h('li', { key: `b-${j}` }, [h(RenderInline, { source: b })]),
+                  ),
+                )
+              : null,
+          ]),
+        )
+      }
+      return h('div', children)
+    }
+  },
+})
 </script>
 
 <template>
-  <div class="schema-page" :class="[`layout-${schema.header.layout}`, { 'on-bg': onBg }]" :style="rootStyle">
-    <header v-if="schema.header.show" class="sc-header" :class="`is-${schema.header.layout}`" :style="headerStyle">
-      <img
-        v-if="photo && schema.header.photo.show"
-        class="sc-photo"
-        :src="photo"
-        :style="{ height: 'var(--s-photo)' }"
-        alt=""
-      />
-      <h1 v-if="data.basics.name" class="sc-name">{{ data.basics.name }}</h1>
-      <p v-if="data.basics.label" class="sc-label">{{ data.basics.label }}</p>
-      <p v-if="contacts.length" class="sc-contact">
-        <template v-if="schema.section.showIcons">
-          <span v-for="c in contacts" :key="c.text" class="sc-contact-item">
-            <IconMini :name="c.icon ?? 'link'" />
-            <span>{{ c.text }}</span>
-          </span>
-        </template>
-        <template v-else>
-          <template v-for="(c, i) in contacts" :key="c.text">
-            <span v-if="i > 0" class="sc-sep">·</span>
-            <span>{{ c.text }}</span>
+  <div class="schema-page" :style="rootStyle">
+    <!-- v2 块布局 -->
+    <template v-if="schema.layout">
+      <div class="sc-columns" :class="{ 'aside-right': layout.aside === 'right' }">
+        <aside
+          v-if="layout.aside !== 'none'"
+          class="sc-aside"
+          :style="{ width: layout.asideWidth + '%' }"
+        >
+          <template v-for="block in layout.side" :key="block.id">
+            <hr v-if="block.kind === 'divider'" class="sc-divider" />
+            <section
+              v-else-if="block.kind === 'section' && sectionByRef(block.ref)"
+              class="sc-section sc-block"
+            >
+              <BlockSection :section="sectionByRef(block.ref)!" :section-style="schema.section" />
+            </section>
           </template>
-        </template>
-      </p>
-      <p v-if="data.basics.summary && schema.header.showSummary" class="sc-summary">
-        {{ data.basics.summary }}
-      </p>
-    </header>
+        </aside>
+        <main class="sc-main" :class="{ 'is-two': layout.aside === 'none' && schema.body.columns === 2 }">
+          <template v-for="block in layout.main" :key="block.id">
+            <hr v-if="block.kind === 'divider'" class="sc-divider" />
+            <header
+              v-else-if="block.kind === 'header' && schema.header.show"
+              class="sc-header"
+              :class="`is-${schema.header.layout}`"
+              :style="headerStyle"
+            >
+              <img
+                v-if="photo && schema.header.photo.show"
+                class="sc-photo"
+                :src="photo"
+                :style="{ height: 'var(--s-photo)' }"
+                alt=""
+              />
+              <h1 v-if="data.basics.name" class="sc-name">{{ data.basics.name }}</h1>
+              <p v-if="data.basics.label" class="sc-label">{{ data.basics.label }}</p>
+              <p v-if="contacts.length" class="sc-contact">
+                <template v-if="schema.section.showIcons">
+                  <span v-for="c in contacts" :key="c.text" class="sc-contact-item">
+                    <IconMini :name="c.icon ?? 'link'" />
+                    <span>{{ c.text }}</span>
+                  </span>
+                </template>
+                <template v-else>
+                  <template v-for="(c, i) in contacts" :key="c.text">
+                    <span v-if="i > 0" class="sc-sep">·</span>
+                    <span>{{ c.text }}</span>
+                  </template>
+                </template>
+              </p>
+              <p
+                v-if="data.basics.summary && schema.header.showSummary"
+                class="sc-summary"
+              >
+                {{ data.basics.summary }}
+              </p>
+            </header>
+            <section
+              v-else-if="block.kind === 'section' && sectionByRef(block.ref)"
+              class="sc-section sc-block"
+            >
+              <BlockSection :section="sectionByRef(block.ref)!" :section-style="schema.section" />
+            </section>
+          </template>
+        </main>
+      </div>
+    </template>
 
-    <main class="sc-body" :class="{ 'is-two': schema.body.columns === 2 }">
-      <section v-for="sec in sections" :key="sec.id" class="sc-section">
-        <h2 class="sc-title" :class="[`is-${schema.section.titleStyle}`]">{{ sec.title }}</h2>
-
-        <p v-for="(text, i) in sec.paragraphs" :key="`p-${i}`" class="sc-paragraph">
-          <RenderInline :source="text" />
-        </p>
-
-        <div v-for="(item, i) in sec.items" :key="`item-${i}`" class="sc-item">
-          <template v-if="item.title === '' && schema.section.skillChips">
-            <div v-if="item.bullets.length" class="sc-chips">
-              <span v-for="(b, j) in item.bullets" :key="`chip-${j}`" class="sc-chip">
-                <RenderInline :source="b" />
-              </span>
-            </div>
+    <!-- legacy（v1）：header + 全部区块顺排 -->
+    <template v-else>
+      <header
+        v-if="schema.header.show"
+        class="sc-header"
+        :class="`is-${schema.header.layout}`"
+        :style="headerStyle"
+      >
+        <img
+          v-if="photo && schema.header.photo.show"
+          class="sc-photo"
+          :src="photo"
+          :style="{ height: 'var(--s-photo)' }"
+          alt=""
+        />
+        <h1 v-if="data.basics.name" class="sc-name">{{ data.basics.name }}</h1>
+        <p v-if="data.basics.label" class="sc-label">{{ data.basics.label }}</p>
+        <p v-if="contacts.length" class="sc-contact">
+          <template v-if="schema.section.showIcons">
+            <span v-for="c in contacts" :key="c.text" class="sc-contact-item">
+              <IconMini :name="c.icon ?? 'link'" />
+              <span>{{ c.text }}</span>
+            </span>
           </template>
           <template v-else>
-            <div class="sc-item-head">
-              <span class="sc-item-title">
-                {{ item.title }}<span v-if="item.subtitle" class="sc-item-subtitle">{{ item.subtitle }}</span>
-              </span>
-              <span v-if="item.date" class="sc-item-date">{{ item.date }}</span>
-            </div>
-            <ul v-if="item.bullets.length" class="sc-bullets" :class="`is-${schema.section.bullets}`">
-              <li v-for="(b, j) in item.bullets" :key="`b-${j}`"><RenderInline :source="b" /></li>
-            </ul>
+            <template v-for="(c, i) in contacts" :key="c.text">
+              <span v-if="i > 0" class="sc-sep">·</span>
+              <span>{{ c.text }}</span>
+            </template>
           </template>
-        </div>
-      </section>
-    </main>
+        </p>
+        <p v-if="data.basics.summary && schema.header.showSummary" class="sc-summary">
+          {{ data.basics.summary }}
+        </p>
+      </header>
 
-    <p v-if="!sections.length && !data.basics.name" class="sc-empty">
+      <main class="sc-body" :class="{ 'is-two': schema.body.columns === 2 }">
+        <section v-for="sec in visibleSections" :key="sec.id" class="sc-section">
+          <BlockSection :section="sec" :section-style="schema.section" />
+        </section>
+      </main>
+    </template>
+
+    <p v-if="!data.sections.length && !data.basics.name" class="sc-empty">
       {{ $t('preview.empty') }}
     </p>
   </div>
 </template>
 
-<script lang="ts">
-export default {
-  name: 'SchemaRenderer',
-}
-</script>
-
 <style scoped>
 .schema-page {
   min-height: 100%;
   color: var(--s-text);
-  line-height: var(--sc-leading, 1.55);
+  line-height: 1.55;
+}
+
+/* ---- v2 块布局 ---- */
+.sc-columns {
+  display: flex;
+  gap: var(--s-gap);
+  align-items: flex-start;
+}
+
+.sc-columns.aside-right {
+  flex-direction: row-reverse;
+}
+
+.sc-aside {
+  flex-shrink: 0;
+}
+
+.sc-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.sc-divider {
+  margin: 14px 0;
+  border: 0;
+  border-top: 1px solid var(--s-line);
 }
 
 /* ---- 头部 ---- */
@@ -191,18 +332,11 @@ export default {
   object-fit: cover;
 }
 
-.layout-center .sc-name {
+.sc-name {
   margin: 0;
-  font-size: calc(24px * var(--s-font-scale, 1));
+  font-size: calc(23px * var(--s-font-scale, 1));
   font-weight: 700;
   letter-spacing: 2px;
-}
-
-.layout-left .sc-name {
-  margin: 0;
-  font-size: calc(22px * var(--s-font-scale, 1));
-  font-weight: 700;
-  letter-spacing: 1px;
 }
 
 .sc-label {

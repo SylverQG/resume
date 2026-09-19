@@ -104,6 +104,7 @@ async function compressToFit() {
           ref="pageEl"
           class="resume-page rounded-sm bg-white shadow-xl"
           :style="{ ...vars, 'min-height': 'var(--page-height)' }"
+          :data-bullets="store.styleOptions.bullets ?? 'disc'"
         >
           <component
             :is="template.component"

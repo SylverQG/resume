@@ -67,6 +67,27 @@ const DENSITIES: { label: string; value: Density }[] = [
 
 const presetName = ref('')
 
+// ---- 专业调整：页面边距 / 要点符号（作用于所有模板） ----
+const padCustom = computed(
+  () => store.styleOptions.padY !== undefined || store.styleOptions.padX !== undefined,
+)
+
+function setPadCustom(enabled: boolean) {
+  if (enabled) {
+    store.setOption('padY', 13)
+    store.setOption('padX', 15)
+  } else {
+    store.setOption('padY', undefined)
+    store.setOption('padX', undefined)
+  }
+}
+
+const BULLET_OPTIONS = ['disc', 'dash', 'none'] as const
+
+function setBullets(value: 'disc' | 'dash' | 'none' | undefined) {
+  store.setOption('bullets', value)
+}
+
 function onSavePreset() {
   if (store.savePreset(presetName.value)) presetName.value = ''
 }
@@ -378,6 +399,60 @@ const idle = 'bg-slate-100 text-slate-600 hover:bg-slate-200'
           </div>
         </div>
       </div>
+
+      <details class="rounded border border-slate-200 px-2.5 py-2">
+        <summary class="cursor-pointer select-none text-xs font-medium text-slate-500">
+          {{ $t('style.pro') }}
+        </summary>
+        <div class="mt-2 space-y-2.5">
+          <label class="flex items-center justify-between text-xs text-slate-600">
+            {{ $t('style.padCustom') }}
+            <input
+              type="checkbox"
+              class="accent-sky-600"
+              :checked="padCustom"
+              @change="setPadCustom(($event.target as HTMLInputElement).checked)"
+            />
+          </label>
+          <template v-if="padCustom">
+            <label class="block text-[11px] text-slate-500">{{ $t('designer.padY') }}</label>
+            <input
+              type="range"
+              min="6"
+              max="25"
+              step="1"
+              :value="store.styleOptions.padY ?? 13"
+              class="w-full accent-sky-600"
+              @input="store.setOption('padY', Number(($event.target as HTMLInputElement).value))"
+            />
+            <label class="block text-[11px] text-slate-500">{{ $t('designer.padX') }}</label>
+            <input
+              type="range"
+              min="6"
+              max="25"
+              step="1"
+              :value="store.styleOptions.padX ?? 15"
+              class="w-full accent-sky-600"
+              @input="store.setOption('padX', Number(($event.target as HTMLInputElement).value))"
+            />
+          </template>
+          <div>
+            <p class="mb-1 text-[11px] text-slate-500">{{ $t('style.bulletsOverride') }}</p>
+            <div class="grid grid-cols-4 gap-1">
+              <button
+                v-for="b in BULLET_OPTIONS"
+                :key="b"
+                class="rounded px-1 py-1 text-[11px]"
+                :class="(store.styleOptions.bullets ?? 'disc') === b ? active : idle"
+                @click="setBullets(b)"
+              >
+                {{ $t(`style.bl_${b}`) }}
+              </button>
+            </div>
+          </div>
+          <p class="text-[10px] leading-4 text-slate-400">{{ $t('style.proHint') }}</p>
+        </div>
+      </details>
 
       <button
         class="w-full rounded border border-slate-200 px-2 py-1.5 text-xs text-slate-500 hover:bg-slate-50"

@@ -10,6 +10,25 @@ export interface SchemaColors {
   hairline: string
 }
 
+/** 搭建器中的块：header / divider / section（ref 指向区块 id 或 kind） */
+export interface SchemaBlock {
+  id: string
+  kind: 'header' | 'divider' | 'section'
+  /** kind === 'section' 时指向区块 id（如 work）或具体 section id */
+  ref?: string
+}
+
+export interface SchemaLayout {
+  /** 'none' = 单栏；left/right = 侧栏位置 */
+  aside: 'none' | 'left' | 'right'
+  /** 侧栏宽度（占页面宽度百分比） */
+  asideWidth: number
+  /** 主栏块序列 */
+  main: SchemaBlock[]
+  /** 侧栏块序列（aside 为 none 时忽略） */
+  side: SchemaBlock[]
+}
+
 export interface TemplateSchema {
   /** 自定义模板 id（建议 custom- 前缀）；与内置模板 id 冲突时导入会重新生成 */
   id: string
@@ -39,6 +58,8 @@ export interface TemplateSchema {
     /** 「技能」类无标题区块渲染为标签胶囊 */
     skillChips: boolean
   }
+  /** v2 搭建器块布局；缺省时按 legacy 模式（header + 全部区块顺排）渲染 */
+  layout?: SchemaLayout
 }
 
 export function defaultSchema(): TemplateSchema {
@@ -94,7 +115,7 @@ export function normalizeSchema(raw: unknown, fallbackId = ''): TemplateSchema |
   const id = typeof r.id === 'string' && r.id.trim() ? r.id.trim() : fallbackId
   if (!id) return null
 
-  return {
+  const out: TemplateSchema = {
     id,
     name: str(r.name, '自定义模板'),
     page: {
@@ -133,6 +154,31 @@ export function normalizeSchema(raw: unknown, fallbackId = ''): TemplateSchema |
       skillChips: bool(section.skillChips, false),
     },
   }
+
+  // v2 块布局（可选）：逐字段校验
+  if (r.layout && typeof r.layout === 'object') {
+    const layout = r.layout as Record<string, unknown>
+    const toBlock = (b: unknown): SchemaBlock | null => {
+      if (typeof b !== 'object' || b === null) return null
+      const o = b as Record<string, unknown>
+      const kind = pick(o.kind, ['header', 'divider', 'section'] as const, 'section')
+      return {
+        id: typeof o.id === 'string' && o.id ? o.id : `blk-${crypto.randomUUID()}`,
+        kind,
+        ref: typeof o.ref === 'string' ? o.ref : undefined,
+      }
+    }
+    const toList = (v: unknown): SchemaBlock[] =>
+      Array.isArray(v) ? v.map(toBlock).filter((b): b is SchemaBlock => b !== null) : []
+    out.layout = {
+      aside: pick(layout.aside, ['none', 'left', 'right'] as const, 'none'),
+      asideWidth: num(layout.asideWidth, 32),
+      main: toList(layout.main),
+      side: toList(layout.side),
+    }
+  }
+
+  return out
 }
 
 /** 导入文件的结构约定 */

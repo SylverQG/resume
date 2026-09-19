@@ -20,3 +20,14 @@ body {
   /* 兜底：极端情况下露出的页面背景与主题同色，不出现白色空带 */
   background-color: #020617;
 }
+
+/* 专业调整：要点符号覆盖（作用于所有模板的要点列表） */
+.resume-page[data-bullets='dash'] ul li::marker {
+  content: '– ';
+  color: var(--accent, currentColor);
+}
+
+.resume-page[data-bullets='none'] ul {
+  list-style: none !important;
+  padding-left: 0.2em !important;
+}

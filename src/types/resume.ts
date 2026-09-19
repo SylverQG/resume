@@ -70,6 +70,12 @@ export interface StyleOptions {
   /** 区块排序（section.id 列表）；空数组 = 跟随 Markdown 原序 */
   sectionOrder: string[]
   showIcons: boolean
+  /** 专业调整：页面上下边距覆盖（mm），缺省跟随密度 */
+  padY?: number
+  /** 专业调整：页面左右边距覆盖（mm），缺省跟随密度 */
+  padX?: number
+  /** 专业调整：要点符号覆盖，作用于所有模板 */
+  bullets?: 'disc' | 'dash' | 'none'
 }
 
 /** 样式方案：模板 + 样式的整体快照，可保存/应用/导入导出（§3.7） */

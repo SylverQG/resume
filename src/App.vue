@@ -5,7 +5,7 @@ import { i18n } from '@/i18n'
 import { useResumeStore } from '@/stores/useResumeStore'
 import { scopeUserCss } from '@/templates/shared/scopeUserCss'
 import PreviewPanel from '@/components/PreviewPanel.vue'
-import TemplateDesigner from '@/components/designer/TemplateDesigner.vue'
+import TemplateBuilder from '@/components/designer/TemplateBuilder.vue'
 import Toolbar from '@/components/Toolbar.vue'
 
 // CodeMirror 体积较大，编辑器懒加载，首屏只加载预览链路
@@ -39,7 +39,7 @@ watch(
 </script>
 
 <template>
-  <TemplateDesigner v-if="store.designerOpen" />
+  <TemplateBuilder v-if="store.designerOpen" />
   <div v-else class="flex h-full flex-col overflow-hidden bg-slate-950 text-slate-200">
     <Toolbar />
     <main class="flex min-h-0 flex-1">
