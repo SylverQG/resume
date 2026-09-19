@@ -61,12 +61,7 @@ const rootStyle = computed(() => {
   }
 })
 
-const headerStyle = computed(() => {
-  const h = props.schema.header
-  const base: Record<string, string> = { position: 'relative' }
-  if (h.bg !== 'none') base.background = h.bg
-  return base
-})
+const showIcons = computed(() => props.schema.section.showIcons)
 
 const STROKE: Record<string, string> = {
   phone:
@@ -102,6 +97,63 @@ const IconMini = defineComponent({
         },
         [h('path', { d: STROKE[iconProps.name] ?? STROKE.link })],
       )
+  },
+})
+
+/** 头部块（主栏 / 侧栏通用） */
+const BlockHeader = defineComponent({
+  name: 'BlockHeader',
+  props: {
+    header: { type: Object, required: true },
+    basics: { type: Object, required: true },
+    contacts: { type: Array, required: true },
+    photo: { type: String, required: false },
+    showIcons: { type: Boolean, required: true },
+  },
+  setup(bprops) {
+    const header = bprops.header as TemplateSchema['header']
+    const basics = bprops.basics as ResumeData['basics']
+    const list = bprops.contacts as ReturnType<typeof contactItems>
+    const onBg = header.bg !== 'none'
+    return () => {
+      const kids: ReturnType<typeof h>[] = []
+      if (bprops.photo && header.photo.show) {
+        kids.push(
+          h('img', {
+            class: 'sc-photo',
+            src: bprops.photo,
+            style: { height: 'var(--s-photo)' },
+            alt: '',
+          }),
+        )
+      }
+      if (basics.name) kids.push(h('h1', { class: 'sc-name' }, basics.name))
+      if (basics.label) kids.push(h('p', { class: 'sc-label' }, basics.label))
+      if (list.length) {
+        const parts: ReturnType<typeof h>[] = []
+        list.forEach((c, i) => {
+          parts.push(
+            h('span', { class: 'sc-contact-item', key: c.text }, [
+              h('span', { class: 'sc-contact-sep', key: `s-${i}` }, i > 0 ? '·' : ''),
+              bprops.showIcons ? h(IconMini, { name: c.icon ?? 'link' }) : null,
+              h('span', c.text),
+            ]),
+          )
+        })
+        kids.push(h('p', { class: 'sc-contact' }, parts))
+      }
+      if (basics.summary && header.showSummary) {
+        kids.push(h('p', { class: 'sc-summary' }, basics.summary))
+      }
+      return h(
+        'header',
+        {
+          class: ['sc-header', `is-${header.layout}`, { 'on-bg': onBg }],
+          style: { position: 'relative', ...(onBg ? { background: header.bg } : {}) },
+        },
+        kids,
+      )
+    }
   },
 })
 
@@ -174,59 +226,37 @@ const BlockSection = defineComponent({
         >
           <template v-for="block in layout.side" :key="block.id">
             <hr v-if="block.kind === 'divider'" class="sc-divider" />
-            <section
+            <BlockHeader
+              v-else-if="block.kind === 'header' && schema.header.show"
+              :header="schema.header"
+              :basics="data.basics"
+              :contacts="contacts"
+              :photo="photo"
+              :show-icons="showIcons"
+            />
+            <BlockSection
               v-else-if="block.kind === 'section' && sectionByRef(block.ref)"
-              class="sc-section sc-block"
-            >
-              <BlockSection :section="sectionByRef(block.ref)!" :section-style="schema.section" />
-            </section>
+              :section="sectionByRef(block.ref)!"
+              :section-style="schema.section"
+            />
           </template>
         </aside>
         <main class="sc-main" :class="{ 'is-two': layout.aside === 'none' && schema.body.columns === 2 }">
           <template v-for="block in layout.main" :key="block.id">
             <hr v-if="block.kind === 'divider'" class="sc-divider" />
-            <header
+            <BlockHeader
               v-else-if="block.kind === 'header' && schema.header.show"
-              class="sc-header"
-              :class="`is-${schema.header.layout}`"
-              :style="headerStyle"
-            >
-              <img
-                v-if="photo && schema.header.photo.show"
-                class="sc-photo"
-                :src="photo"
-                :style="{ height: 'var(--s-photo)' }"
-                alt=""
-              />
-              <h1 v-if="data.basics.name" class="sc-name">{{ data.basics.name }}</h1>
-              <p v-if="data.basics.label" class="sc-label">{{ data.basics.label }}</p>
-              <p v-if="contacts.length" class="sc-contact">
-                <template v-if="schema.section.showIcons">
-                  <span v-for="c in contacts" :key="c.text" class="sc-contact-item">
-                    <IconMini :name="c.icon ?? 'link'" />
-                    <span>{{ c.text }}</span>
-                  </span>
-                </template>
-                <template v-else>
-                  <template v-for="(c, i) in contacts" :key="c.text">
-                    <span v-if="i > 0" class="sc-sep">·</span>
-                    <span>{{ c.text }}</span>
-                  </template>
-                </template>
-              </p>
-              <p
-                v-if="data.basics.summary && schema.header.showSummary"
-                class="sc-summary"
-              >
-                {{ data.basics.summary }}
-              </p>
-            </header>
-            <section
+              :header="schema.header"
+              :basics="data.basics"
+              :contacts="contacts"
+              :photo="photo"
+              :show-icons="showIcons"
+            />
+            <BlockSection
               v-else-if="block.kind === 'section' && sectionByRef(block.ref)"
-              class="sc-section sc-block"
-            >
-              <BlockSection :section="sectionByRef(block.ref)!" :section-style="schema.section" />
-            </section>
+              :section="sectionByRef(block.ref)!"
+              :section-style="schema.section"
+            />
           </template>
         </main>
       </div>
@@ -234,40 +264,14 @@ const BlockSection = defineComponent({
 
     <!-- legacy（v1）：header + 全部区块顺排 -->
     <template v-else>
-      <header
+      <BlockHeader
         v-if="schema.header.show"
-        class="sc-header"
-        :class="`is-${schema.header.layout}`"
-        :style="headerStyle"
-      >
-        <img
-          v-if="photo && schema.header.photo.show"
-          class="sc-photo"
-          :src="photo"
-          :style="{ height: 'var(--s-photo)' }"
-          alt=""
-        />
-        <h1 v-if="data.basics.name" class="sc-name">{{ data.basics.name }}</h1>
-        <p v-if="data.basics.label" class="sc-label">{{ data.basics.label }}</p>
-        <p v-if="contacts.length" class="sc-contact">
-          <template v-if="schema.section.showIcons">
-            <span v-for="c in contacts" :key="c.text" class="sc-contact-item">
-              <IconMini :name="c.icon ?? 'link'" />
-              <span>{{ c.text }}</span>
-            </span>
-          </template>
-          <template v-else>
-            <template v-for="(c, i) in contacts" :key="c.text">
-              <span v-if="i > 0" class="sc-sep">·</span>
-              <span>{{ c.text }}</span>
-            </template>
-          </template>
-        </p>
-        <p v-if="data.basics.summary && schema.header.showSummary" class="sc-summary">
-          {{ data.basics.summary }}
-        </p>
-      </header>
-
+        :header="schema.header"
+        :basics="data.basics"
+        :contacts="contacts"
+        :photo="photo"
+        :show-icons="showIcons"
+      />
       <main class="sc-body" :class="{ 'is-two': schema.body.columns === 2 }">
         <section v-for="sec in visibleSections" :key="sec.id" class="sc-section">
           <BlockSection :section="sec" :section-style="schema.section" />
@@ -281,7 +285,7 @@ const BlockSection = defineComponent({
   </div>
 </template>
 
-<style scoped>
+<style>
 .schema-page {
   min-height: 100%;
   color: var(--s-text);
@@ -379,7 +383,7 @@ const BlockSection = defineComponent({
   color: inherit;
 }
 
-.sc-sep {
+.sc-contact-sep {
   color: var(--s-line);
 }
 
@@ -395,7 +399,8 @@ const BlockSection = defineComponent({
 }
 
 /* ---- 正文 ---- */
-.sc-body.is-two {
+.sc-body.is-two,
+.sc-main.is-two {
   column-count: 2;
   column-gap: var(--s-gap);
 }
@@ -510,12 +515,12 @@ const BlockSection = defineComponent({
   color: var(--s-text);
 }
 
-.schema-page :deep(a) {
+.schema-page a {
   color: var(--s-accent);
   text-decoration: none;
 }
 
-.schema-page :deep(code) {
+.schema-page code {
   padding: 0 4px;
   border-radius: 3px;
   background: #f1f5f9;

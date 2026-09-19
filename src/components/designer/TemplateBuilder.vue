@@ -3,6 +3,8 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import { parseResume } from '@/markdown/parse'
+import { sampleEn } from '@/markdown/samples/sample.en'
+import { sampleZh } from '@/markdown/samples/sample.zh'
 import { useResumeStore } from '@/stores/useResumeStore'
 import SchemaRenderer from '@/templates/schema/SchemaRenderer.vue'
 import { defaultSchema, unwrapSchemaFile, wrapSchemaFile } from '@/types/schema'
@@ -27,7 +29,9 @@ function initDraft(): TemplateSchema {
   return schema
 }
 
-const resumeData = computed(() => parseResume(store.markdown))
+// 新建模板统一用示例数据（张三）做预览与素材来源，保证区块 id 稳定（work/education/projects/skills）
+const sampleLocale = computed(() => (store.locale === 'en' ? sampleEn : sampleZh))
+const resumeData = computed(() => parseResume(sampleLocale.value))
 const sections = computed(() => resumeData.value.sections)
 
 const layout = computed(() => {
