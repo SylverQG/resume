@@ -62,12 +62,16 @@
 
   /* 跨页规则：条目与要点不切断，区块标题/条目标题不孤行 */
   .resume-page .r-item,
-  .resume-page .r-bullets li {
+  .resume-page .r-bullets li,
+  .resume-page .sc-item,
+  .resume-page .sc-bullets li {
     break-inside: avoid;
   }
 
   .resume-page .r-section-title,
-  .resume-page .r-item-head {
+  .resume-page .r-item-head,
+  .resume-page .sc-title,
+  .resume-page .sc-item-head {
     break-after: avoid;
   }
 }

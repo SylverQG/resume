@@ -3,6 +3,9 @@ import { computed, ref, watch } from 'vue'
 
 import { sampleZh } from '@/markdown/samples/sample.zh'
 import { getTemplate, templates } from '@/templates/registry'
+import { schemaToMeta } from '@/templates/schema/schemaTemplate'
+import { normalizeSchema } from '@/types/schema'
+import type { TemplateSchema } from '@/types/schema'
 import type { ResumeDoc, StyleOptions, ThemePreset } from '@/types/resume'
 
 const STORAGE_KEY = 'resume-app:v1'
@@ -12,6 +15,7 @@ interface PersistedStateV2 {
   resumes: ResumeDoc[]
   activeResumeId: string
   presets: ThemePreset[]
+  schemas: TemplateSchema[]
   targetPages: 1 | 2
   locale: 'zh-CN' | 'en'
 }
@@ -54,6 +58,16 @@ function normalizeDoc(raw: unknown, fallbackName: string): ResumeDoc | null {
 }
 
 /** 读取持久化状态：v2 直读，v1 迁移为单份简历，损坏数据走全新默认 */
+function schemasFrom(raw: unknown): TemplateSchema[] {
+  if (!Array.isArray(raw)) return []
+  const out: TemplateSchema[] = []
+  raw.forEach((item, i) => {
+    const s = normalizeSchema(item, `custom-${i + 1}`)
+    if (s) out.push(s)
+  })
+  return out
+}
+
 function loadState(): PersistedStateV2 {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
@@ -76,6 +90,7 @@ function loadState(): PersistedStateV2 {
             resumes,
             activeResumeId,
             presets: Array.isArray(parsed.presets) ? (parsed.presets as ThemePreset[]) : [],
+            schemas: schemasFrom(parsed.schemas),
             targetPages: parsed.targetPages === 2 ? 2 : 1,
             locale,
           }
@@ -103,6 +118,7 @@ function loadState(): PersistedStateV2 {
             resumes: [doc],
             activeResumeId: doc.id,
             presets: Array.isArray(v1.presets) ? v1.presets : [],
+            schemas: [],
             targetPages: v1.targetPages === 2 ? 2 : 1,
             locale,
           }
@@ -123,7 +139,7 @@ function loadState(): PersistedStateV2 {
     optionsByTemplate: {},
     customCss: '',
   }
-  return { version: 2, resumes: [doc], activeResumeId: doc.id, presets: [], targetPages: 1, locale: 'zh-CN' }
+  return { version: 2, resumes: [doc], activeResumeId: doc.id, presets: [], schemas: [], targetPages: 1, locale: 'zh-CN' }
 }
 
 export const useResumeStore = defineStore('resume', () => {
@@ -133,6 +149,12 @@ export const useResumeStore = defineStore('resume', () => {
   const resumes = ref<ResumeDoc[]>(initial.resumes)
   const activeResumeId = ref(initial.activeResumeId)
   const presets = ref<ThemePreset[]>(initial.presets)
+
+  /** 自定义模板（模板设计器产出，M5） */
+  const schemas = ref<TemplateSchema[]>(initial.schemas)
+  const customTemplates = computed(() => schemas.value.map(schemaToMeta))
+  const designerOpen = ref(false)
+  const designerSchemaId = ref<string | null>(null)
   const targetPages = ref<1 | 2>(initial.targetPages)
   const locale = ref<'zh-CN' | 'en'>(initial.locale)
 
@@ -350,6 +372,49 @@ export const useResumeStore = defineStore('resume', () => {
     return valid.length
   }
 
+  // ---- 模板设计器（M5，设计文档 §8） ----
+
+  function openDesigner(schemaId: string | null = null) {
+    designerSchemaId.value = schemaId
+    designerOpen.value = true
+  }
+
+  function closeDesigner() {
+    designerOpen.value = false
+    designerSchemaId.value = null
+  }
+
+  /** 保存（新建或按 id 覆盖更新）自定义模板，并切换为当前模板 */
+  function saveCustomSchema(schema: TemplateSchema): string {
+    const normalized = normalizeSchema(schema, `custom-${Date.now()}`)!
+    schemas.value = [...schemas.value.filter((s) => s.id !== normalized.id), normalized]
+    templateId.value = normalized.id
+    return normalized.id
+  }
+
+  function deleteCustomSchema(id: string) {
+    schemas.value = schemas.value.filter((s) => s.id !== id)
+    if (templateId.value === id) templateId.value = 'classic'
+  }
+
+  function findCustomSchema(id: string): TemplateSchema | undefined {
+    return schemas.value.find((s) => s.id === id)
+  }
+
+  /** 导入自定义模板 JSON：数组批量或单个对象；同 id 覆盖更新；与内置 id 冲突时重建 id。返回导入条数 */
+  function importCustomSchemas(list: unknown): number {
+    const items = Array.isArray(list) ? list : [list]
+    let count = 0
+    for (const item of items) {
+      const s = normalizeSchema(item, `custom-${crypto.randomUUID()}`)
+      if (!s) continue
+      const finalId = templates.some((t) => t.id === s.id) ? `custom-${crypto.randomUUID()}` : s.id
+      schemas.value = [...schemas.value.filter((x) => x.id !== finalId), { ...s, id: finalId }]
+      count++
+    }
+    return count
+  }
+
   // ---- 长度提示（§3.6） ----
 
   /** 「压缩到目标页数」前的样式快照（撤销压缩用；仅内存，不入持久化） */
@@ -376,7 +441,7 @@ export const useResumeStore = defineStore('resume', () => {
   // localStorage 防抖 500ms 自动保存（§3.4）；版本号便于后续迁移
   let timer: ReturnType<typeof setTimeout> | undefined
   watch(
-    [resumes, activeResumeId, presets, targetPages, locale],
+    [resumes, activeResumeId, presets, schemas, targetPages, locale],
     () => {
       clearTimeout(timer)
       timer = setTimeout(() => {
@@ -386,6 +451,7 @@ export const useResumeStore = defineStore('resume', () => {
             resumes: resumes.value,
             activeResumeId: activeResumeId.value,
             presets: presets.value,
+            schemas: schemas.value,
             targetPages: targetPages.value,
             locale: locale.value,
           }
@@ -403,6 +469,10 @@ export const useResumeStore = defineStore('resume', () => {
     activeResumeId,
     activeDoc,
     presets,
+    schemas,
+    customTemplates,
+    designerOpen,
+    designerSchemaId,
     targetPages,
     locale,
     markdown,
@@ -425,6 +495,12 @@ export const useResumeStore = defineStore('resume', () => {
     applyPreset,
     deletePreset,
     importPresets,
+    openDesigner,
+    closeDesigner,
+    saveCustomSchema,
+    deleteCustomSchema,
+    findCustomSchema,
+    importCustomSchemas,
     compressSnapshot,
     beginCompressSnapshot,
     restoreCompress,

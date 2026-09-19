@@ -23,7 +23,11 @@ const resumeData = computed<ResumeData>(() => {
   }
 })
 
-const template = computed(() => getTemplate(store.templateId))
+const template = computed(() => {
+  const id = store.templateId
+  const custom = store.customTemplates.find((tpl) => tpl.id === id)
+  return custom ?? getTemplate(id)
+})
 const vars = computed(() => ({
   ...styleVars(store.styleOptions),
   '--photo-scale': String(store.activeDoc?.photoScale ?? 1),

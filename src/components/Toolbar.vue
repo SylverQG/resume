@@ -30,6 +30,11 @@ function toggleLocale() {
   store.locale = store.locale === 'zh-CN' ? 'en' : 'zh-CN'
 }
 
+function onDesign() {
+  openPanel.value = null
+  store.openDesigner()
+}
+
 function exportPdf() {
   // Chrome 以页面标题命名 PDF：临时换成简历名，导出文件即「<简历名>-简历.pdf」，
   // 也避免多次导出同名覆盖 / 误开旧文件
@@ -126,7 +131,11 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', onDocMouseDown))
       </button>
 
       <div v-if="openPanel && openPanel !== 'resumes'" class="absolute right-0 top-full z-20 mt-2">
-        <TemplatePicker v-if="openPanel === 'template'" @close="openPanel = null" />
+        <TemplatePicker
+          v-if="openPanel === 'template'"
+          @close="openPanel = null"
+          @design="onDesign"
+        />
         <StylePanel v-else-if="openPanel === 'style'" />
         <FileMenu v-else />
       </div>
